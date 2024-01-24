@@ -1,5 +1,5 @@
 //
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
+// Copyright [2020] Nobleo Technology"  [legal/copyright] test
 //
 #include <algorithm>
 #include <iostream>
