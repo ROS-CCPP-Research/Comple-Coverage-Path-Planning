@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="map" default="$(find full_coverage_path_planner)/maps/partition_map_1.yaml"/>
+    <!-- <arg name="map" default="$(find full_coverage_path_planner)/maps/map.yaml"/> -->
     <!-- <arg name="map" default="$(find full_coverage_path_planner)/maps/grid.yaml"/> -->
     <!-- <arg name="map" default="$(find full_coverage_path_planner)/maps/grid.yaml"/> -->
+    <arg name="map" default="$(find full_coverage_path_planner)/maps/partition_map_4.yaml"/>
     <arg name="coverage_area_offset" default="-2.5 -2.5 0 0 0 0"/>
     <arg name="coverage_area_size_x" default="10"/>
     <arg name="coverage_area_size_y" default="10"/>
@@ -11,7 +12,7 @@
     <arg name="target_yaw_vel" default="0.4"/>
     <arg name="robot_radius" default="0.3"/>
     <arg name="tool_radius" default="0.3"/>
-    <arg name="rviz" default="true"/>
+    <arg name="rviz" default="true"/> 
 
     <!--Move base flex, using the full_coverage_path_planner-->
     <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex" output="screen" required="true">
@@ -44,7 +45,7 @@
     <!--We need a map to fully cover-->
     <node name="grid_server" pkg="map_server" type="map_server" args="$(arg map)">
         <param name="frame_id" value="map"/>
-    </node>
+    </node> 
 
     <!--Tracking_pid cannot just accept a nav_msgs/Path, it can only go to a PoseStamped,
        so the path_interpolator drags a PoseStamped over a Path at a given speed-->
@@ -83,6 +84,39 @@
     <node name="publish_simple_goal" pkg="rostopic" type="rostopic"  launch-prefix="bash -c 'sleep 1.0; $0 $@' "
         args="pub --latch /move_base/goal move_base_msgs/MoveBaseActionGoal --file=$(find full_coverage_path_planner)/test/simple_goal.yaml"/>
 
-    <!-- rviz -->
+      <!-- rviz -->
     <node if="$(eval rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find full_coverage_path_planner)/test/full_coverage_path_planner/fcpp.rviz" />
+
+      <!-- robot -->
+    <!-- <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="x_pos" default="0.0"/>
+    <arg name="y_pos" default="0.0"/>
+    <arg name="z_pos" default="0.0"/> -->
+
+    <!-- Arguments -->
+    <!-- <arg name="world" default="$(find full_coverage_path_planner)/worlds/square.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>  -->
+
+      <!-- Gazebo empty world launch -->
+    <!-- <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(find full_coverage_path_planner)/worlds/square.world"/>
+      <arg name="paused" value="false"/>
+      <arg name="use_sim_time" value="true"/>
+      <arg name="gui" value="true"/>
+      <arg name="headless" value="false"/>
+      <arg name="debug" value="false"/>
+    </include> -->
+
+      <!-- Load the URDF into the ROS Parameter Server -->
+
+
+      <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->	
+
+    <!-- <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model turtlebot3_$(arg model) -param robot_description" /> -->
+    
+
 </launch>
