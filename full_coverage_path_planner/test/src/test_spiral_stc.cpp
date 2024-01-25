@@ -1,9 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
-// Created by nobleo on 27-9-18.
-//
-
 /*
  * Full coverage simply requires all reachable nodes to be visited.
  * We check this by counting the number of unique elements in the path.

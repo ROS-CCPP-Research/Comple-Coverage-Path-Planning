@@ -1,8 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
-// Created by nobleo on 6-9-18.
-//
 #include <climits>
 #include <fstream>
 #include <list>

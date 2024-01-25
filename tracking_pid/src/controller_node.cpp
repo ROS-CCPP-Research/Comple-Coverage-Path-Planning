@@ -35,7 +35,7 @@ bool enableCallback(std_srvs::SetBool::Request& req,   // NOLINT
 {
   controller_enabled = req.data;
   waiting_for_setpoint = false;
-  // TODO(Nobleo): Add wait dfor new Setp
+  // TODO: Add wait dfor new Setp
   pid_controller.setEnabled(controller_enabled);
   res.success = true;
   if (controller_enabled)
@@ -50,7 +50,7 @@ bool enableAndWaitCallback(std_srvs::SetBool::Request& req,   // NOLINT
 {
   controller_enabled = req.data;
   waiting_for_setpoint = true;
-  // TODO(Nobleo): Add wait dfor new Setp
+  // TODO: Add wait dfor new Setp
   pid_controller.setEnabled(controller_enabled);
   res.success = true;
   if (controller_enabled)

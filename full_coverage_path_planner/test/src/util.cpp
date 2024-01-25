@@ -1,9 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
-// Created by nobleo on 27-9-18.
-//
-
 #include <vector>
 #include <full_coverage_path_planner/util.h>
 

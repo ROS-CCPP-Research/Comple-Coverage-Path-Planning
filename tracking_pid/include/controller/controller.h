@@ -1,6 +1,3 @@
-//
-// Created by nobleo on 11-9-18.
-//
 #include <angles/angles.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>

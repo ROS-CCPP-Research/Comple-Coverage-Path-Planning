@@ -1,6 +1,4 @@
-//
-// Created by nobleo on 11-9-18.
-//
+
 
 #include "controller/controller.h"
 
