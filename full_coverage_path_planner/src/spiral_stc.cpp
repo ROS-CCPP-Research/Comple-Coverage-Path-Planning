@@ -17,6 +17,7 @@ namespace full_coverage_path_planner
 {
 void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
 {
+
   if (!initialized_)
   {
     // Create a publisher to visualize the plan
@@ -34,6 +35,7 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
     float tool_radius_default = 0.5f;
     private_named_nh.param<float>("tool_radius", tool_radius_, tool_radius_default);
     initialized_ = true;
+    std::cout<<"inittt--------------------------------------";
   }
 }
 
@@ -250,6 +252,8 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   printGrid(grid, grid, printPath);
 #endif
 
+  std::cout << "hhelloooo----------------------------------------";
+
   std::list<Point_t> goalPoints = spiral_stc(grid,
                                               startPoint,
                                               spiral_cpp_metrics_.multiple_pass_counter,
@@ -271,6 +275,14 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   // (also controlled by planner_frequency parameter in move_base namespace)
 
   ROS_INFO("Publishing plan!");
+  for (const auto& poseStamped : plan) {
+    std::cout << "PoseStamped - ";
+    std::cout << "Position: (" << poseStamped.pose.position.x << ", "
+              << poseStamped.pose.position.y << ", " << poseStamped.pose.position.z << ") ";
+    std::cout << "Orientation: (" << poseStamped.pose.orientation.x << ", "
+              << poseStamped.pose.orientation.y << ", " << poseStamped.pose.orientation.z
+              << ", " << poseStamped.pose.orientation.w << ")\n";
+}
   publishPlan(plan);
   ROS_INFO("Plan published!");
   ROS_DEBUG("Plan published");
