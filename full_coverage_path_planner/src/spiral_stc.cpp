@@ -271,6 +271,14 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   // (also controlled by planner_frequency parameter in move_base namespace)
 
   ROS_INFO("Publishing plan!");
+  for (const auto& poseStamped : plan) {
+    std::cout << "PoseStamped - ";
+    std::cout << "Position: (" << poseStamped.pose.position.x << ", "
+              << poseStamped.pose.position.y << ", " << poseStamped.pose.position.z << ") ";
+    std::cout << "Orientation: (" << poseStamped.pose.orientation.x << ", "
+              << poseStamped.pose.orientation.y << ", " << poseStamped.pose.orientation.z
+              << ", " << poseStamped.pose.orientation.w << ")\n";
+}
   publishPlan(plan);
   ROS_INFO("Plan published!");
   ROS_DEBUG("Plan published");

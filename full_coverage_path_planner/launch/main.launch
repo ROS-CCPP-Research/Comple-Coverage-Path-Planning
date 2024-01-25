@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+
+<launch>
+
+	<arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="map" default="$(find full_coverage_path_planner)/maps/grid.yaml"/>
+  <arg name="coverage_area_offset" default="-2.5 -2.5 0 0 0 0"/>
+  <arg name="coverage_area_size_x" default="10"/>
+  <arg name="coverage_area_size_y" default="10"/>
+  <arg name="target_x_vel" default="0.5"/>
+  <arg name="target_yaw_vel" default="0.4"/>
+  <arg name="robot_radius" default="0.3"/>
+  <arg name="tool_radius" default="0.3"/>
+  <arg name="rviz" default="true"/>
+
+  <arg name="x_pos_1" default="0.0"/>
+  <arg name="y_pos_1" default="0.0"/>
+  <arg name="z_pos_1" default="0.0"/>
+
+  <arg name="x_pos_2" default="5.0"/>
+  <arg name="y_pos_2" default="5.0"/>
+  <arg name="z_pos_2" default="0.0"/>
+
+  <arg name="x_pos_3" default="10.0"/>
+  <arg name="y_pos_3" default="10.0"/>
+  <arg name="z_pos_3" default="0.0"/>
+
+  <arg name="x_pos_4" default="20.0"/>
+  <arg name="y_pos_4" default="20.0"/>
+  <arg name="z_pos_4" default="0.0"/>
+
+  <arg name="robot_description_1" default="$(find xacro)/xacro --inorder $(find robot_pkg)/description/urdf/robot_$(arg model).urdf.xacro" />
+  <arg name="robot_description_2" default="$(find xacro)/xacro --inorder $(find robot_pkg)/description/urdf/robot_$(arg model).urdf.xacro" />
+  <arg name="robot_description_3" default="$(find xacro)/xacro --inorder $(find robot_pkg)/description/urdf/robot_$(arg model).urdf.xacro" />
+  <arg name="robot_description_4" default="$(find xacro)/xacro --inorder $(find robot_pkg)/description/urdf/robot_$(arg model).urdf.xacro" />
+
+    
+  <!-- Arguments -->
+  <arg name="world" default="$(find map_pkg)/worlds/square.world"/>
+  <arg name="paused" value="false"/>
+  <arg name="use_sim_time" value="true"/>
+  <arg name="gui" value="true"/>
+  <arg name="headless" value="false"/>
+  <arg name="debug" value="false"/> 
+
+    <!-- Gazebo empty world launch -->
+  <!-- <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find map_pkg)/worlds/square.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include> -->
+
+  <!--Move base flex, using the full_coverage_path_planner-->
+    <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex" output="screen" required="true">
+        <param name="tf_timeout" value="1.5"/>
+        <rosparam file="$(find full_coverage_path_planner)/test/full_coverage_path_planner/param/planners.yaml" command="load" />
+        <rosparam file="$(find full_coverage_path_planner)/test/full_coverage_path_planner/param/local_costmap_params.yaml" command="load" />
+        <param name="SpiralSTC/robot_radius" value="$(arg robot_radius)"/>
+        <param name="SpiralSTC/tool_radius" value="$(arg tool_radius)"/>
+        <param name="global_costmap/robot_radius" value="$(arg robot_radius)"/>
+        <remap from="odom" to="/odom"/>
+        <remap from="scan" to="/scan"/>
+
+        <remap from="/move_base_flex/SpiralSTC/plan" to="/move_base/SpiralSTC/plan"/>
+        <remap from="/move_base_flex/tracking_pid/interpolator" to="/move_base/TrackingPidLocalPlanner/interpolator"/>
+    </node>
+
+    <!-- Move Base backwards compatibility -->
+    <node pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" name="move_base" >
+        <param name="base_global_planner" value="SpiralSTC" />
+    </node>
+
+	<!-- Load the URDF into the ROS Parameter Server -->
+
+ 
+  
+  <!-- <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map)">
+  </node> -->
+  
+  <node name="grid_server" pkg="map_server" type="map_server" args="$(arg map)">
+        <param name="frame_id" value="map"/>
+  </node>
+
+  <!-- Navigation -->
+  <include file="$(find nav_pkg)/launch/robot_navigation.launch">
+    <arg name="model" value="$(arg model)"/>
+    <arg name="robot_name" value="RobotModel_1"/>
+    <arg name="initial_x" value="$(arg x_pos_1)"/>
+    <arg name="initial_y" value="$(arg y_pos_1)"/>
+    <arg name="initial_z" value="$(arg z_pos_1)"/>
+    <arg name="robot_state_publisher_name" value="robot_state_publisher_1"/>
+    <arg name="description" value="$(arg robot_description_1)"/>
+  </include>
+  <include file="$(find nav_pkg)/launch/robot_navigation.launch">
+    <arg name="model" value="$(arg model)"/>
+    <arg name="robot_name" value="RobotModel_2"/>
+    <arg name="initial_x" value="$(arg x_pos_2"/>
+    <arg name="initial_y" value="$(arg y_pos_2)"/>
+    <arg name="initial_z" value="$(arg z_pos_2)"/>
+    <arg name="robot_state_publisher_name" value="robot_state_publisher_2"/>
+    <arg name="description" value="$(arg robot_description_2)"/>
+  </include>
+  <include file="$(find nav_pkg)/launch/robot_navigation.launch">
+    <arg name="model" value="$(arg model)"/>
+    <arg name="robot_name" value="RobotModel_3"/>
+    <arg name="initial_x" value="$(arg x_pos_3)"/>
+    <arg name="initial_y" value="$(arg y_pos_3)"/>
+    <arg name="initial_z" value="$(arg z_pos_3)"/>
+    <arg name="robot_state_publisher_name" value="robot_state_publisher_3"/>
+    <arg name="description" value="$(arg robot_description_3)"/>
+  </include>
+  <include file="$(find nav_pkg)/launch/robot_navigation.launch">
+    <arg name="model" value="$(arg model)"/>
+    <arg name="robot_name" value="RobotModel_4"/>
+    <arg name="initial_x" value="$(arg x_pos_4)"/>
+    <arg name="initial_y" value="$(arg y_pos_4)"/>
+    <arg name="initial_z" value="$(arg z_pos_4)"/>
+    <arg name="robot_state_publisher_name" value="robot_state_publisher_4"/>
+    <arg name="description" value="$(arg robot_description_4)"/>
+  </include>
+
+  <!-- rviz -->
+<!-- Trigger planner by publishing a move_base goal -->
+    <node name="publish_simple_goal" pkg="rostopic" type="rostopic"  launch-prefix="bash -c 'sleep 1.0; $0 $@' "
+        args="pub --latch /move_base/goal move_base_msgs/MoveBaseActionGoal --file=$(find full_coverage_path_planner)/test/simple_goal.yaml"/>
+        
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find full_coverage_path_planner)/rviz/fccpp_main.rviz" />
+  
+</launch>

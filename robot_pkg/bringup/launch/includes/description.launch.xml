@@ -1,0 +1,6 @@
+<launch>
+  <arg name="description" default="robot_description"/>
+  <arg name="model" default="burger"/>
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find robot_pkg)/description/urdf/robot_$(arg model).urdf.xacro'" />
+  <param name="robot_description" command="$(arg urdf_file)" />
+</launch>
