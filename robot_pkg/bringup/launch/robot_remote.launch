@@ -1,0 +1,31 @@
+<launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="multi_robot_name" default="robot"/>
+  <arg name="initial_x_pos" default="0.0"/>
+  <arg name="initial_y_pos" default="0.0"/>
+  <arg name="initial_z_pos" default="0.0"/>
+  <arg name="robot_state_publisher" default="robot_state_publisher"/>
+  <arg name="robot_description" default="robot_description"/>
+
+  <include file="$(find robot_pkg)/bringup/launch/includes/description.launch.xml">
+    <arg name="model" value="$(arg model)" />
+    <arg name="description" value="$(arg robot_description)" />
+  </include>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_odom_broadcaster" args="0 0 0 0 0 0 map odom_$(arg multi_robot_name)" />
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_link_broadcaster" args="0 0 0 0 0 0 odom_$(arg multi_robot_name) base_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_footprint_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) base_footprint_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_imu_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) imu_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_scan_broadcaster" args="0 0 0 0 0 0 imu_link_$(arg multi_robot_name) base_scan_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_caster_back_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) caster_back_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_wheel_left_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) wheel_left_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_wheel_right_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) wheel_right_link_$(arg multi_robot_name)" />
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="$(arg robot_state_publisher)_$(arg multi_robot_name)">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="initial_x" value="$(arg initial_x_pos)" />
+    <param name="initial_y" value="$(arg initial_y_pos)" />
+    <param name="initial_z" value="$(arg initial_z_pos)" />
+  </node>
+</launch>
