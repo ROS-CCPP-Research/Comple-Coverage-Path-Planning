@@ -17,6 +17,7 @@ namespace full_coverage_path_planner
 {
 void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
 {
+
   if (!initialized_)
   {
     // Create a publisher to visualize the plan
@@ -34,6 +35,7 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
     float tool_radius_default = 0.5f;
     private_named_nh.param<float>("tool_radius", tool_radius_, tool_radius_default);
     initialized_ = true;
+    std::cout<<"inittt--------------------------------------";
   }
 }
 
@@ -249,6 +251,8 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   printPath.push_back(startPoint);
   printGrid(grid, grid, printPath);
 #endif
+
+  std::cout << "hhelloooo----------------------------------------";
 
   std::list<Point_t> goalPoints = spiral_stc(grid,
                                               startPoint,

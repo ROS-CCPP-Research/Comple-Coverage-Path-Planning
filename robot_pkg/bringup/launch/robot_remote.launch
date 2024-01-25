@@ -12,18 +12,17 @@
     <arg name="description" value="$(arg robot_description)" />
   </include>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_map_broadcaster" args="0 0 0 0 0 0 map base_footprint" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_link_broadcaster" args="0 0 0 0 0 0 base_footprint base_link" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_imu_link_broadcaster" args="0 0 0 0 0 0 base_link imu_link" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_scan_broadcaster" args="0 0 0 0 0 0 imu_link base_scan" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_caster_back_link_broadcaster" args="0 0 0 0 0 0 base_link caster_back_link" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_wheel_left_link_broadcaster" args="0 0 0 0 0 0 base_link wheel_left_link" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_wheel_right_link_broadcaster" args="0 0 0 0 0 0 base_link wheel_right_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_odom_broadcaster" args="0 0 0 0 0 0 map odom_$(arg multi_robot_name)" />
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_tf_map_broadcaster" args="0 0 0 0 0 0 map $(arg multi_robot_name)/base_footprint" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_link_broadcaster" args="0 0 0 0 0 0 odom_$(arg multi_robot_name) base_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_footprint_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) base_footprint_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_imu_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) imu_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_base_scan_broadcaster" args="0 0 0 0 0 0 imu_link_$(arg multi_robot_name) base_scan_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_caster_back_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) caster_back_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_wheel_left_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) wheel_left_link_$(arg multi_robot_name)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg multi_robot_name)_wheel_right_link_broadcaster" args="0 0 0 0 0 0 base_link_$(arg multi_robot_name) wheel_right_link_$(arg multi_robot_name)" />
 
-
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="$(arg robot_state_publisher)">
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="$(arg robot_state_publisher)_$(arg multi_robot_name)">
     <param name="publish_frequency" type="double" value="50.0" />
     <param name="initial_x" value="$(arg initial_x_pos)" />
     <param name="initial_y" value="$(arg initial_y_pos)" />
