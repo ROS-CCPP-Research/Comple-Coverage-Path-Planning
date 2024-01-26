@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright] test
-//
 #include <algorithm>
 #include <iostream>
 #include <list>
@@ -271,7 +268,7 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   ROS_INFO("Total accessible cells: %d", spiral_cpp_metrics_.accessible_counter);
   ROS_INFO("Total accessible area: %f", spiral_cpp_metrics_.total_area_covered);
 
-  // TODO(CesarLopez): Check if global path should be calculated repetitively or just kept
+  // TODO: Check if global path should be calculated repetitively or just kept
   // (also controlled by planner_frequency parameter in move_base namespace)
 
   ROS_INFO("Publishing plan!");
