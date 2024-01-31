@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 /** include the libraries you need in your planner here */
 /** for global path planner interface */
 #include <fstream>

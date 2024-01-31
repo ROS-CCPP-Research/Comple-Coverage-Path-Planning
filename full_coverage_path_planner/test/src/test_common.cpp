@@ -1,8 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-// Created by nobleo on 25-9-18.
-//
-
 /*
  * Run tests for all of the common function except the print* functions that do not return anything testable
  * Most important here is the conversion function and a variant of A*. Each test is explained below

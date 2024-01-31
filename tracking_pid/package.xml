@@ -8,10 +8,9 @@
   <version>2.2.0</version>
   <description>PID controller following a moving carrot</description>
 
-  <maintainer email="cesar.lopez@nobleo.nl">Cesar Lopez</maintainer>
+  <maintainer email="abc@gmail.com"></maintainer>
 
-  <author email="michiel.francke@nobleo.nl">Michiel Francke</author>
-  <author email="cesar.lopez@nobleo.nl">Cesar Lopez</author>
+  <author email="abc@gmail.com"></author>
 
   <license>Apache 2.0</license>
 

@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 #include <list>
 #include <vector>
 

@@ -22,13 +22,6 @@ The PID contains three loops: Longitudinal, lateral and angular loops.
 
 Apache 2.0
 
-**Author: Michiel Franke, Cesar Lopez**
-
-**Maintainer:  Cesar Lopez, cesar.lopez@nobleo.nl.**
-
-**Affiliation: [Nobleo Projects](https://www.nobleo.nl)**
-
-
 The tracking_pid package has been tested under [ROS] Melodic and Ubuntu 18.04.
 
 
@@ -39,15 +32,6 @@ The tracking_pid package has been tested under [ROS] Melodic and Ubuntu 18.04.
 #### Dependencies
 
 - [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics),
-
-#### Building
-
-To build from source, clone the latest version from this repository into your catkin workspace and compile the package using
-
-    cd catkin_workspace/src
-    git clone https://github.com/nobleo/tracking_pid.git
-    cd ../
-    catkin_make
 
 ### Unit Tests
 
@@ -78,12 +62,12 @@ Or run the tracking node together with a Coverage Path Planner
 
 Both of these depend on:
 
-[mobile_robot_simulator](https://github.com/mrath/mobile_robot_simulator.git) that integrates /cmd_vel into a /base_link TF-frame and an odometry publisher
+[mobile_robot_simulator] that integrates /cmd_vel into a /base_link TF-frame and an odometry publisher
 
 
 tracking_pid test_tracking_pid_local_planner_cpp.launch depends on:
 
-[full_coverage_path_planner](https://github.com/nobleo/full_coverage_path_planner) for CPP global planner
+[full_coverage_path_planner] for CPP global planner
 
 ## Configuring in RQT
 
@@ -264,8 +248,6 @@ Command the robot to stay as close to the target as possible given the tuneable 
 
 ## Bugs & Feature Requests
 
-Please report bugs and request features using the [Issue Tracker](https://github.com/nobleo/tracking_pid/issues).
-
 [ROS]: http://www.ros.org
 [rviz]: http://wiki.ros.org/rviz
 
@@ -286,6 +268,3 @@ More information: <a href="http://rosin-project.eu">rosin-project.eu</a>
 
 <img src="http://rosin-project.eu/wp-content/uploads/rosin_eu_flag.jpg"
      alt="eu_flag" height="45" align="left" >
-
-This project has received funding from the European Union’s Horizon 2020
-research and innovation programme under grant agreement no. 732287.
