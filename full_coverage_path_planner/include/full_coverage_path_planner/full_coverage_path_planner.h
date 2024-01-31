@@ -107,6 +107,8 @@ protected:
   fPoint_t grid_origin_;
   bool initialized_;
   geometry_msgs::PoseStamped previous_goal_;
+  std::string robotNamespace;
+  std::string start_pose;
 
   struct spiral_cpp_metrics_type
   {
