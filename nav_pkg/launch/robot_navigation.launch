@@ -1,41 +1,23 @@
 <launch>
   <!-- Arguments -->
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="publish_frequency" default="10.0"/>
   <arg name="move_forward_only" default="false"/>
-  <arg name="robot_name" default="robot"/>
-  <arg name="initial_x" default="0.0"/>
-  <arg name="initial_y" default="0.0"/>
-  <arg name="initial_z" default="0.0"/>
-  <arg name="robot_state_publisher_name" default="robot_state_publisher"/>
-  <arg name="description" default=""/>
-  
+  <arg name="cmd_vel_topic" default="/move_base/cmd_vel" />
+  <arg name="odom_topic" default="/odom" />
 
   <!-- Turtlebot3 -->
   <include file="$(find robot_pkg)/bringup/launch/robot_remote.launch">
     <arg name="model" value="$(arg model)" />
-    <arg name="multi_robot_name" value="$(arg robot_name)"/>
-    <arg name="initial_x_pos" value="$(arg initial_x)"/>
-    <arg name="initial_y_pos" value="$(arg initial_y)"/>
-    <arg name="initial_z_pos" value="$(arg initial_z)"/>
-    <arg name="robot_state_publisher" value="$(arg robot_state_publisher_name)"/>
-    <arg name="robot_description" value="$(arg description)" />
+    <arg name="publish_frequency" value="$(arg publish_frequency)"/>
   </include>
 
   <!-- AMCL -->
-  <!-- <include file="$(find nav_pkg)/launch/amcl.launch">
-    <arg name="name" value="$(arg robot_name)_amcl"/>
-    <arg name="scan_topic"     value="$(arg robot_name)_scan"/>
-    <arg name="initial_pose_y" value="$(arg initial_y)"/>
-    <arg name="initial_pose_x" value="$(arg initial_x)"/>
-    <arg name="initial_pose_a" value="$(arg initial_z)"/>
-  </include> -->
+  <include file="$(find nav_pkg)/launch/amcl.launch"/>
 
   <!-- move_base -->
-  <!-- <include file="$(find nav_pkg)/launch/move_base.launch">
+  <include file="$(find nav_pkg)/launch/move_base.launch">
     <arg name="model" value="$(arg model)" />
-    <arg name="move_base_name" value="$(arg robot_name)_move_base"/>
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
-    <arg name="cmd_vel_topic" value="$(arg robot_name)/cmd_vel" />
-    <arg name="odom_topic" value="$(arg robot_name)/odom" />
-  </include> -->
+  </include>
 </launch>
