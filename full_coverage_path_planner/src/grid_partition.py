@@ -6,8 +6,6 @@ from std_msgs.msg import Header
 import cv2
 import numpy as np
 import os
-from std_srvs.srv import Empty, EmptyResponse
-from nav_msgs.srv import SetMap, SetMapRequest
 
 
 class MapDecomposer:
@@ -18,54 +16,13 @@ class MapDecomposer:
         # self.og_sub = rospy.Subscriber("/square_map", OccupancyGrid, self.og_callback)
         self.partition_pubs = [rospy.Publisher(f"/partition_map_{i}", OccupancyGrid, queue_size=10) for i in range(1, 5)]
 
-        self.map_services = [
-            rospy.Service(f"/update_map_{i}", Empty, self.update_map_callback(i))
-            for i in range(1, 5)
-        ]
-        
-        self.static_map_service = rospy.ServiceProxy('/static_map', SetMap)
-        
-    def update_map_callback(self, partition_number):
-        def callback(request):
-            self.partition_pubs[partition_number - 1].publish()  # Publish the partitioned map
-            rospy.loginfo(f"Partitioned map {partition_number} published")
-            
-            # If partition_number is 1, set it as the static_map
-            if partition_number == 1:
-                self.set_static_map(self.partition_pubs[0])
 
-            return EmptyResponse()  # Return an empty response as acknowledgment
-        return callback
-          
-    def update_map_callback(self, partition_number):
-        def callback(request):
-            self.partition_pubs[partition_number - 1].publish()  # Publish the partitioned map
-            rospy.loginfo(f"Partitioned map {partition_number} published")
-            return EmptyResponse()  # Return an empty response as acknowledgment
-        return callback
-    
-    def set_static_map(self, map_data_publisher):
-        # Assuming map_data_publisher is the publisher for partition_map_1
-        map_data = rospy.wait_for_message(map_data_publisher.name, OccupancyGrid)
-        
-        # Prepare the request for SetMap service
-        set_map_request = SetMapRequest()
-        set_map_request.map = map_data
-        
-        # Call the SetMap service
-        response = self.static_map_service(set_map_request)
-        
-        if response.success:
-            rospy.loginfo("Partitioned map set as the static_map.")
-        else:
-            rospy.logerr("Failed to set the partitioned map as the static_map.")
-    
     def og_callback(self, msg):
         input_map_data = msg
 
         if isinstance(input_map_data, OccupancyGrid):
             input_info = input_map_data.info
-            # rospy.loginfo(input_map_data.data)
+            rospy.loginfo(input_map_data.data)
 
             sub_maps = [OccupancyGrid() for _ in range(4)]
 
@@ -104,7 +61,12 @@ class MapDecomposer:
                     sub_map_values.extend(input_map_data.data[row * input_info.width + start_col : row * input_info.width + end_col])
 
                 sub_maps[i].data = sub_map_values
-                
+
+
+
+            self.partition_pubs[i - 1].publish(sub_maps[i])
+            rospy.loginfo(f"Partitioned map {i} published")
+
                 # og_array = [0] * (sub_width * sub_height)
                 # sub_maps[i].data = og_array
 
@@ -117,7 +79,7 @@ class MapDecomposer:
                 for i in range(4):
                     self.partition_pubs[i].publish(sub_maps[i] )
                 rate.sleep()
-                
+
 if __name__ == '__main__':
     try:
         rospy.init_node('map_decomposer')
