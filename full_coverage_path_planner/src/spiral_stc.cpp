@@ -43,7 +43,7 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
     ros::NodeHandle private_nh("~/");
     ros::NodeHandle nh, private_named_nh("~/" + name);
 
-    plan_pub_ = nh.advertise<nav_msgs::Path>("boustrophedon/path", 10, true);
+    plan_pub_ = nh.advertise<nav_msgs::Path>("boustrophedon/path", 10,  true);
     // Try to request the cpp-grid from the cpp_grid map_server
     cpp_grid_client_ = nh.serviceClient<nav_msgs::GetMap>("static_map");
 
