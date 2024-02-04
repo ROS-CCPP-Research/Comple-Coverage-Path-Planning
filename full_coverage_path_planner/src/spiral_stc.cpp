@@ -11,22 +11,6 @@
 #include "full_coverage_path_planner/spiral_stc.h"
 #include <pluginlib/class_list_macros.h>
 
-using PoseStamped = geometry_msgs::PoseStamped;
-
-static double euDist2D(const PoseStamped& p1, const PoseStamped& p2)
-{
-    return sqrt(pow(p1.pose.position.x - p2.pose.position.x, 2) + pow(p1.pose.position.y - p2.pose.position.y, 2));
-}
-
-static PoseStamped parametricInterp1(const PoseStamped& p1, const PoseStamped& p2, double alpha)
-{
-    PoseStamped p;
-    p.header.frame_id = p1.header.frame_id;
-    p.pose.orientation = p1.pose.orientation;
-    p.pose.position.x = p1.pose.position.x + alpha * (p2.pose.orientation.x - p1.pose.orientation.x);
-    p.pose.position.y = p1.pose.position.y + alpha * (p2.pose.orientation.y - p1.pose.orientation.y);
-    return p;
-}
 
 // register this planner as a BaseGlobalPlanner plugin
 PLUGINLIB_EXPORT_CLASS(full_coverage_path_planner::SpiralSTC, nav_core::BaseGlobalPlanner)
@@ -43,24 +27,23 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
     ros::NodeHandle private_nh("~/");
     ros::NodeHandle nh, private_named_nh("~/" + name);
 
-    plan_pub_ = nh.advertise<nav_msgs::Path>("boustrophedon/path", 10,  true);
+    plan_pub_ = private_named_nh.advertise<nav_msgs::Path>("plan", 1);
+
     // Try to request the cpp-grid from the cpp_grid map_server
     cpp_grid_client_ = nh.serviceClient<nav_msgs::GetMap>("static_map");
 
+    // Get the cost map:
+    costmap_ros_ = costmap_ros;
+        // are we making a local copy(global variable) of the costmap here?-> Yes
+    costmap_ = costmap_ros->getCostmap();
+        // all with _ end are global variable...
+
     // Define  robot radius (radius) parameter
     float robot_radius_default = 0.5f;
-    // private_named_nh.param<float>("robot_radius", robot_radius_, robot_radius_default);
-    ros::param::get("~robot_radius", robot_radius_);
+    private_named_nh.param<float>("robot_radius", robot_radius_, robot_radius_default);
     // Define  tool radius (radius) parameter
     float tool_radius_default = 0.5f;
-    // private_named_nh.param<float>("tool_radius", tool_radius_, tool_radius_default);
-    ros::param::get("~tool_radius", tool_radius_);
-
-    ros::param::get("~robot_namespace", robotNamespace);
-
-    ros::param::get("~start_pose", start_pose);
-
-    
+    private_named_nh.param<float>("tool_radius", tool_radius_, tool_radius_default);
 
     initialized_ = true;
   }
@@ -253,7 +236,13 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
     ROS_INFO("Initialized!");
   }
 
-  // clock_t begin_c = clock();
+  // clear the plan, just in case
+  plan.clear();
+  costmap_ = costmap_ros_->getCostmap();
+  // is the costmap_ros_ a global variable ?
+  // this is updated cost map??
+
+  clock_t begin_c = clock();
   Point_t startPoint;
 
   /********************** Get grid from server **********************/
@@ -265,13 +254,6 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
     ROS_ERROR("Could not retrieve grid from map_server");
     return false;
   }
-
-  // Determine the type of the grid
-  const std::type_info &type = typeid(grid[0][0]);
-
-  // Print the type name
-  std::cout << "Grid element type: " << type.name() << std::endl;
-
 
    // This is the point from which path planning starts
 
@@ -287,35 +269,6 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   printPath.push_back(startPoint);
   printGrid(grid, grid, printPath);
 #endif
-
-  int occupiedCellCount = 0;
-
-  for (const auto &row : grid) {
-    for (const auto &cell : row) {
-      if (cell) {
-        std::cout << "1 "; // Occupied cell
-        occupiedCellCount++;
-      } else {
-        std::cout << "0 "; // Free cell
-      }
-    }
-    std::cout << std::endl;
-  }
-
-std::cout << "Occupied Cell Count: " << occupiedCellCount << std::endl;
-
-
-  int area = 0;
-  for (const auto &row : grid) {
-    for (const auto &cell : row) {
-      if (cell) {
-        area += (cell >= 0 && cell <= 25) ? 1 : 0;
-      }
-    }
-  }
-
-std::cout << "Area: " << area << std::endl;
-
 
   std::list<Point_t> goalPoints = spiral_stc(grid,
                                               startPoint,
@@ -338,107 +291,14 @@ std::cout << "Area: " << area << std::endl;
   // (also controlled by planner_frequency parameter in move_base namespace)
 
   ROS_INFO("Publishing plan!");
-  for (const auto& poseStamped : plan) {
-    std::cout << "PoseStamped - ";
-    std::cout << "Position: (" << poseStamped.pose.position.x << ", "
-              << poseStamped.pose.position.y << ", " << poseStamped.pose.position.z << ") ";
-    std::cout << "Orientation: (" << poseStamped.pose.orientation.x << ", "
-              << poseStamped.pose.orientation.y << ", " << poseStamped.pose.orientation.z
-              << ", " << poseStamped.pose.orientation.w << ")\n";
-}
   publishPlan(plan);
   ROS_INFO("Plan published!");
   ROS_DEBUG("Plan published");
 
-  // Inorder to divide the path among agents, we need more points in between the corner points of the path.
-    // We just perform a linear parametric up-sampling
-    std::vector<PoseStamped> upSampled;
-    ros::NodeHandle nh;
+    clock_t end_c = clock();
+    double elapsed_secs = static_cast<double>(end_c - begin_c) / CLOCKS_PER_SEC;
+    std::cout << "elapsed time: " << elapsed_secs << "\n";
 
-    ROS_INFO("Path computed. Up-sampling...");
-    for (size_t i = 0; i < plan.size() - 1; ++i)
-    {
-        double mul = 0.5 * euDist2D(plan[i], plan[i + 1]) / floor(euDist2D(plan[i], plan[i + 1]) / robot_radius_);
-        double a = 0;
-        while (a < 1)
-        {
-            upSampled.push_back(parametricInterp1(plan[i], plan[i + 1], a));
-            a += mul;
-        }
-        upSampled.push_back(plan[i + 1]);
-    }
-    ROS_INFO("Up-sampling complete");
-    ROS_INFO("Waiting for number of agents");
-
-    // Prepare publishers
-    size_t nAgents = ros::topic::waitForMessage<std_msgs::UInt8>("number_of_agents")->data;
-    std::vector<ros::Publisher> waypointPublishers;
-    waypointPublishers.reserve(nAgents);
-    for (auto i = 0; i < nAgents; ++i)
-    {
-        std::stringstream ss;
-        ss << robotNamespace << "_" << i << "/waypoints";
-        waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
-    }
-
-    // Now divide the path approximately equally for each agent
-    std::vector<nav_msgs::Path> agentPaths(nAgents);
-
-    size_t length = upSampled.size() / nAgents;
-    size_t leftover = upSampled.size() % nAgents;
-    size_t begin = 0, end = 0;
-
-    ROS_INFO("Publishing paths");
-    for (size_t i = 0; i < std::min(nAgents, upSampled.size()); ++i)
-    {
-        end += leftover > 0 ? (length + !!(leftover--)) : length;
-
-        agentPaths[i].header.frame_id = "map";
-        agentPaths[i].header.stamp = ros::Time::now();
-        agentPaths[i].poses.reserve(end - begin);
-
-        for (size_t j = begin; j < end; ++j)
-        {
-            agentPaths[i].poses.push_back(upSampled[j]);
-        }
-        waypointPublishers[i].publish(agentPaths[i]);
-        begin = end;
-    }
-    ROS_ERROR_STREAM(upSampled.size());
-    size_t s = 0;
-    for (size_t i = 0; i < nAgents; ++i)
-    {
-        s += agentPaths[i].poses.size();
-    }
-    ROS_ERROR_STREAM(s);
-
-    // clock_t end_c = clock();
-    // double elapsed_secs = static_cast<double>(end_c - begin_c) / CLOCKS_PER_SEC;
-    // std::cout << "elapsed time: " << elapsed_secs << "\n";
-
-    ros::spin();
     return true;
 }
 }  // namespace full_coverage_path_planner
-
-int main(int argc, char** argv)
-{
-
-    ros::init(argc, argv, "SpiralSTC");
-    // Create an instance of the SpiralSTC class
-    full_coverage_path_planner::SpiralSTC mySpiralPlanner;
-
-    // Initialize the planner (you might need to provide necessary parameters)
-    mySpiralPlanner.initialize("SpiralSTC", nullptr);
-
-    // Create dummy start and goal poses
-    geometry_msgs::PoseStamped start, goal;
-
-    // Call the makePlan function
-    std::vector<geometry_msgs::PoseStamped> plan;
-    mySpiralPlanner.makePlan(start, goal, plan);
-
-    // Do something with the generated plan if needed
-
-    return EXIT_SUCCESS;
-}
