@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="map" default="$(find full_coverage_path_planner)/maps/grid.yaml"/>
+    <arg name="coverage_area_offset" default="-2.5 -2.5 0 0 0 0"/>
+    <arg name="coverage_area_size_x" default="10"/>
+    <arg name="coverage_area_size_y" default="10"/>
+    <arg name="target_x_vel" default="0.5"/>
+    <arg name="target_yaw_vel" default="0.4"/>
+    <arg name="robot_radius" default="0.3"/>
+    <arg name="tool_radius" default="0.3"/>
+    <arg name="rviz" default="true"/>
+
+        <!--We need a map to fully cover-->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map)">
+    </node>
+
+     <!-- <node name="partitioned_map_server_1" pkg="map_server" type="map_server" args="$(arg map1)">
+        <param name="frame_id" value="partition_map_1"/>
+    </node> -->
+
+        <!-- Run Python script -->
+    <!-- <node name="grid_partition" pkg="full_coverage_path_planner" type="grid_partition.py" output="screen">
+        <param name="coverage_area_offset" value="$(arg coverage_area_offset)"/>
+        <param name="coverage_area_size_x" value="$(arg coverage_area_size_x)"/>
+        <param name="coverage_area_size_y" value="$(arg coverage_area_size_y)"/>
+        <param name="robot_radius" value="$(arg robot_radius)"/>
+        <param name="tool_radius" value="$(arg tool_radius)"/>
+    </node> -->
+
+     <!-- Run Python script -->
+    <node name="grid_partition" pkg="full_coverage_path_planner" type="grid_partition.py" output="screen">
+            
+        <!-- <remap from="/update_map_2" to="/static_map"/> -->
+        <!-- Add similar remap tags for update_map_3 and update_map_4 -->
+    </node>
+
+
+    <!-- rviz -->
+    <node if="$(eval rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find full_coverage_path_planner)/test/full_coverage_path_planner/fcpp.rviz" />
+
+</launch>

@@ -12,6 +12,11 @@ find_package(catkin REQUIRED
             roslint
             rostest
             tf
+            geometry_msgs
+            nav_msgs
+            std_msgs
+            std_srvs
+            tf2
         )
 
 include_directories(
@@ -30,7 +35,17 @@ catkin_package(
         nav_core
         pluginlib
         roscpp
+        geometry_msgs
+        nav_msgs
+        std_msgs
+        std_srvs
+        tf2
+        tf
 )
+
+
+roslint_cpp()
+roslint_python()
 
 add_library(${PROJECT_NAME}
         src/common.cpp
@@ -42,15 +57,27 @@ target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
     )
 
+add_executable(path_planner src/spiral_stc.cpp)
+target_link_libraries(path_planner ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
+add_dependencies(path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(coverage_progress_visualizer_node src/coverage_progress_visualizer_node.cpp)
+target_link_libraries(coverage_progress_visualizer_node ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
+add_dependencies(coverage_progress_visualizer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 install(TARGETS
             ${PROJECT_NAME}
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        )
 
+install(TARGETS path_planner coverage_progress_visualizer_node
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
 install(DIRECTORY include/${PROJECT_NAME}
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+      )
 
 install(FILES fcpp_plugin.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
@@ -59,6 +86,10 @@ install(FILES fcpp_plugin.xml
 catkin_install_python(
   PROGRAMS
     nodes/coverage_progress
+    scripts/optimizer.py
+    scripts/map_merge.py
+    scripts/multi_robot_bringup.py
+    scripts/eval_progress.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -76,5 +107,3 @@ if (CATKIN_ENABLE_TESTING)
     add_rostest(test/${PROJECT_NAME}/test_${PROJECT_NAME}.test)
 
 endif()
-
-roslint_cpp()

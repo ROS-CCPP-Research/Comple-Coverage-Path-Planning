@@ -1,0 +1,15 @@
+<launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="multi_robot_name" default=""/>
+  <arg name="publish_frequency" default="10.0"/>
+
+  <include file="$(find robot_pkg)/bringup/launch/includes/description.launch.xml">
+    <arg name="model" value="$(arg model)" />
+    <arg name="urdf" value="$(arg model)" />
+  </include>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_()">
+    <param name="publish_frequency" type="double" value="$(arg publish_frequency)" />
+    <param name="tf_prefix" value="$(arg multi_robot_name)"/>
+  </node>
+</launch>

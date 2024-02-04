@@ -1,0 +1,16 @@
+<sdf version="1.7">
+  <world name="default">
+
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+
+    <!-- A turtlebot symbol -->
+    <include>
+      <uri>model://house-01</uri>
+    </include>
+
+  </world>
+</sdf>

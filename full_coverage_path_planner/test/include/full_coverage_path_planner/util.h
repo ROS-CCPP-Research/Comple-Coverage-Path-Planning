@@ -1,9 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
-// Created by nobleo on 27-9-18.
-//
-
 #include <stdlib.h>
 #include <time.h>
 #include <vector>

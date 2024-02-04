@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 /** include the libraries you need in your planner here */
 /** for global path planner interface */
 #include <fstream>
@@ -110,6 +107,8 @@ protected:
   fPoint_t grid_origin_;
   bool initialized_;
   geometry_msgs::PoseStamped previous_goal_;
+  std::string robotNamespace;
+  std::string start_pose;
 
   struct spiral_cpp_metrics_type
   {

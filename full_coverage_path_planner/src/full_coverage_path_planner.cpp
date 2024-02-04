@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 #include <list>
 #include <vector>
 
@@ -50,8 +47,8 @@ void FullCoveragePathPlanner::publishPlan(const std::vector<geometry_msgs::PoseS
 
   if (!path.empty())
   {
-    gui_path.header.frame_id = path[0].header.frame_id;
-    gui_path.header.stamp = path[0].header.stamp;
+    gui_path.header.frame_id = "map";
+    gui_path.header.stamp = ros::Time::now();
   }
 
   // Extract the plan in world co-ordinates, we assume the path is all in the same frame

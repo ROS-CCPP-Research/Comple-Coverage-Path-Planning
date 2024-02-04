@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -120,7 +117,7 @@ bool a_star_to_open_space(std::vector<std::vector<bool> > const &grid, gridNode_
           std::vector<gridNode_t>::iterator it = --(nn.end());
           dx = it->pos.x - (it - 1)->pos.x;
           dy = it->pos.y - (it - 1)->pos.y;
-          // TODO(CesarLopez) docs: this seems to cycle through directions
+          // TODO docs: this seems to cycle through directions
           // (notice the shift-by-one between both sides of the =)
           dx_prev = dx;
           dx = -dy;
