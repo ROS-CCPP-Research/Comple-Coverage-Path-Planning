@@ -16,7 +16,7 @@
     <group ns="$(arg uid)">
         <!--    EKF State Estimation node -->
         <!--    Not required if Gazebo is publishing the odom<->base_link tf -->
-               <include file="$(find filters)/launch/ekf.launch"/>
+               <!-- <include file="$(find filters)/launch/ekf.launch"/> -->
 
 
         <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom_tf_broadcaster"

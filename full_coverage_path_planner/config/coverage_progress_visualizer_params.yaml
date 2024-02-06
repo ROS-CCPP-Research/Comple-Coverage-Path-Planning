@@ -1,5 +1,5 @@
-#map_frame: coverage_map
-#coverage_frame: robot_0/base_footprint
+map_frame: coverage_map
+coverage_frame: robot_0/base_footprint
 
 # Rate at which progress tracker should be run
 rate: 20.0  # Hz
