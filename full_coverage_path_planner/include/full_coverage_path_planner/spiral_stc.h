@@ -26,6 +26,7 @@ namespace full_coverage_path_planner
 class SpiralSTC : public nav_core::BaseGlobalPlanner, public full_coverage_path_planner::FullCoveragePathPlanner
 {
 public:
+
   /**
    * Find a path that spirals inwards from init until an obstacle is seen in the grid
    * @param grid 2D grid of bools. true == occupied/blocked/obstacle

@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
             tf
             geometry_msgs
             nav_msgs
+            sensor_msgs
             std_msgs
             std_srvs
             tf2
@@ -37,6 +38,7 @@ catkin_package(
         roscpp
         geometry_msgs
         nav_msgs
+        sensor_msgs
         std_msgs
         std_srvs
         tf2
@@ -51,13 +53,14 @@ add_library(${PROJECT_NAME}
         src/common.cpp
         src/${PROJECT_NAME}.cpp
         src/spiral_stc.cpp
+        src/main.cpp
         )
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
     )
 
-add_executable(path_planner src/spiral_stc.cpp)
+add_executable(path_planner src/main.cpp)
 target_link_libraries(path_planner ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
 add_dependencies(path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

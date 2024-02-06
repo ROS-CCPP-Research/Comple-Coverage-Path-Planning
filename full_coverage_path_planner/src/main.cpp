@@ -62,11 +62,20 @@ int main(int argc, char** argv)
 
     // Convert occupancy grid to binary matrix
     planner.parseGrid(*occ, grid, robotRadius, robotRadius, pose, scaled);
-    // planner.parseGrid(*occ, grid, robotRadius, robotRadius, pose, scaled);
 
     // Boustrophedon path planning
-    int multiple_pass_counter, visited_counter;
-    std::list<Point_t> path = full_coverage_path_planner::SpiralSTC::spiral_stc(grid, scaled, multiple_pass_counter, visited_counter);
+    // int multiple_pass_counter, visited_counter;
+    struct spiral_cpp_metrics_type
+    {
+        int visited_counter;
+        int multiple_pass_counter;
+        int accessible_counter;
+        double total_area_covered;
+    };
+    spiral_cpp_metrics_type spiral_cpp_metrics_;
+    
+    std::list<Point_t> path = full_coverage_path_planner::SpiralSTC::spiral_stc(grid, scaled, spiral_cpp_metrics_.multiple_pass_counter,
+                                              spiral_cpp_metrics_.visited_counter);
 
     // path has the indices of corner points in the path, we now convert that to real world coordinates
     std::vector<PoseStamped> plan;
