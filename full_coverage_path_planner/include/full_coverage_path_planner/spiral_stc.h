@@ -23,9 +23,10 @@ using std::string;
 #include "full_coverage_path_planner/full_coverage_path_planner.h"
 namespace full_coverage_path_planner
 {
-class SpiralSTC : public nav_core::BaseGlobalPlanner, private full_coverage_path_planner::FullCoveragePathPlanner
+class SpiralSTC : public nav_core::BaseGlobalPlanner, public full_coverage_path_planner::FullCoveragePathPlanner
 {
 public:
+
   /**
    * Find a path that spirals inwards from init until an obstacle is seen in the grid
    * @param grid 2D grid of bools. true == occupied/blocked/obstacle
@@ -49,6 +50,8 @@ public:
                                         int &multiple_pass_counter,
                                         int &visited_counter);
 
+
+private:
   /**
    * @brief Given a goal pose in the world, compute a plan
    * @param start The start pose
@@ -65,24 +68,6 @@ public:
    * @param  costmap A pointer to the ROS wrapper of the costmap to use for planning
    */
   void initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
-
-// private:
-  // /**
-  //  * @brief Given a goal pose in the world, compute a plan
-  //  * @param start The start pose
-  //  * @param goal The goal pose
-  //  * @param plan The plan... filled by the planner
-  //  * @return True if a valid plan was found, false otherwise
-  //  */
-  // bool makePlan(const geometry_msgs::PoseStamped &start, const geometry_msgs::PoseStamped &goal,
-  //               std::vector<geometry_msgs::PoseStamped> &plan);
-
-  // /**
-  //  * @brief  Initialization function for the FullCoveragePathPlanner object
-  //  * @param  name The name of this planner
-  //  * @param  costmap A pointer to the ROS wrapper of the costmap to use for planning
-  //  */
-  // void initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
 };
 
 }  // namespace full_coverage_path_planner
