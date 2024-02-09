@@ -62,7 +62,6 @@ int main(int argc, char** argv)
 
     // Convert occupancy grid to binary matrix
     planner.parseGrid(*occ, grid, robotRadius, robotRadius, pose, scaled);
-    // planner.parseGrid(*occ, grid, robotRadius, robotRadius, pose, scaled);
 
     // Boustrophedon path planning
     int multiple_pass_counter, visited_counter;
