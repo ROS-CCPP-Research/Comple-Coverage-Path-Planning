@@ -66,7 +66,9 @@ int main(int argc, char** argv)
 
     // Boustrophedon path planning
     int multiple_pass_counter, visited_counter;
-    std::list<Point_t> path = full_coverage_path_planner::SpiralSTC::spiral_stc(grid, scaled, multiple_pass_counter, visited_counter);
+    // std::list<Point_t> path = full_coverage_path_planner::SpiralSTC::spiral_stc(grid, scaled, multiple_pass_counter, visited_counter);
+
+    std::list<Point_t> path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(grid, scaled, multiple_pass_counter, visited_counter);
 
     // path has the indices of corner points in the path, we now convert that to real world coordinates
     std::vector<PoseStamped> plan;
