@@ -60,7 +60,7 @@ class MultiMapMergerNode:
             merged = np.bitwise_or(np.array(g.data, dtype=np.int), merged)
 
         msg = OccupancyGrid()
-        msg.header.frame_id = grids[0].header.frame_id
+        msg.header.frame_id = "map"
         msg.header.stamp = rospy.Time().now()
         msg.info = grids[0].info
         msg.data = merged.tolist()

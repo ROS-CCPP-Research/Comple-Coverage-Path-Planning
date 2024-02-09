@@ -72,7 +72,7 @@ public:
   virtual bool makePlan(const geometry_msgs::PoseStamped& start,
                         const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan) = 0;
 
-protected:
+public:
   /**
    * Convert internal representation of a to a ROS path
    * @param start Start pose of robot
@@ -109,7 +109,9 @@ protected:
   geometry_msgs::PoseStamped previous_goal_;
   std::string robotNamespace;
   std::string start_pose;
-
+  costmap_2d::Costmap2DROS* costmap_ros_;
+  costmap_2d::Costmap2D* costmap_;
+  
   struct spiral_cpp_metrics_type
   {
     int visited_counter;

@@ -22,15 +22,12 @@ launch_files = []
 pkg = "bringup"
 src = "coverage.launch"
 robot_namespace = rospy.get_param("~robot_namespace", "robot")
-print(n_agents)
-print(type(n_agents))
+
 for robot_id in range(n_agents):
-    print(robot_id)
     path_topic = f"{robot_namespace}_{robot_id}/waypoints"
     start = (
         cast(Path, rospy.wait_for_message(path_topic, Path)).poses[0].pose
     )  # type: Pose
-    print(robot_id)
     cli_args = [
         pkg,
         src,
@@ -39,16 +36,9 @@ for robot_id in range(n_agents):
         f"y_pos:={start.position.y}",
         f"yaw:={0.0}",
     ]
-    print(robot_id)
     roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(cli_args)[0]
-    print(robot_id)
     roslaunch_args = cli_args[2:]
-    print(robot_id)
     launch_files.append((roslaunch_file, roslaunch_args))
-    print(robot_id)
-
-print("launch filessss")
-print(launch_files)
 
 parent = roslaunch.parent.ROSLaunchParent(uuid, launch_files)
 parent.start()
