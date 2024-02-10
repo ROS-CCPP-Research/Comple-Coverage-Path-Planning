@@ -63,6 +63,8 @@ int main(int argc, char** argv)
     // Convert occupancy grid to binary matrix
     planner.parseGrid(*occ, grid, robotRadius, robotRadius, pose, scaled);
 
+    full_coverage_path_planner::SpiralSTC::boustrophedon_subregions(grid,sub_width,sub_height)
+
     // Boustrophedon path planning
     int multiple_pass_counter, visited_counter;
     // std::list<Point_t> path = full_coverage_path_planner::SpiralSTC::spiral_stc(grid, scaled, multiple_pass_counter, visited_counter);

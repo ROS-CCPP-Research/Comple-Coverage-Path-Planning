@@ -97,6 +97,8 @@ public:
                  float toolRadius,
                  geometry_msgs::PoseStamped const& realStart,
                  Point_t& scaledStart);
+
+                 
   ros::Publisher plan_pub_;
   ros::ServiceClient cpp_grid_client_;
   nav_msgs::OccupancyGrid cpp_grid_;
@@ -111,6 +113,10 @@ public:
   std::string start_pose;
   costmap_2d::Costmap2DROS* costmap_ros_;
   costmap_2d::Costmap2D* costmap_;
+
+   std::list<std::vector<Point_t>> sub_regions;
+   int sub_width=5;
+   int sub_height=5;
   
   struct spiral_cpp_metrics_type
   {

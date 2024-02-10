@@ -73,6 +73,17 @@ public:
   static std::list<Point_t> boustrophedon_stc(std::vector<std::vector<bool>> const& grid, Point_t& init,
                                                 int& multiple_pass_counter, int& visited_counter);
 
+  /**
+  *crete sub regions
+  * @param environment
+  * @param sub_width
+  * @param sub_height
+  * @return sub_regions // return the
+  */
+
+  static std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
+                                                         int sub_width, int sub_height)
+
 
 private:
   /**

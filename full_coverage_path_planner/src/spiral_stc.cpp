@@ -51,6 +51,26 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
   }
 }
 
+std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
+                                                         int sub_width, int sub_height) {
+
+  // Iterate through the environment grid, starting from the top-left corner
+  for (int y = 0; y < environment.size(); y += sub_height) {
+    for (int x = 0; x < environment[0].size(); x += sub_width) {
+      // Create a new sub-region with appropriate boundaries
+      std::vector<Point_t> sub_region = {
+        {x, y},  // Top-left corner
+        {std::min(x + sub_width, environment[0].size() - 1), y},  // Top-right corner
+        {std::min(x + sub_width, environment[0].size() - 1), std::min(y + sub_height, environment.size() - 1)}, // Bottom-right corner
+        {x, std::min(y + sub_height, environment.size() - 1)}  // Bottom-left corner
+      };
+      sub_regions.push_back(sub_region);
+    }
+  }
+
+  return sub_regions;
+}
+
 // boustrophedon (only the mountain pattern up and down)... stc(spanning key tree coverage----> reach deadend... still
 // have area to cover (a-star)...->
 
@@ -99,7 +119,7 @@ std::list<gridNode_t> SpiralSTC::boustrophedon(std::vector<std::vector<bool>> co
     default:
         ROS_ERROR(
             "Full Coverage Path Planner: NO INITIAL ROBOT DIRECTION CALCULATED. "
-            "This is a logic error that must be fixed by editing boustrophedon_stc.cpp. Will travel east for now.");
+            "This is a logic error that must be fixed by editing spiral_stc.cpp. Will travel east for now.");
         robot_dir = east;
         dx = +1;
         dy = 0;
