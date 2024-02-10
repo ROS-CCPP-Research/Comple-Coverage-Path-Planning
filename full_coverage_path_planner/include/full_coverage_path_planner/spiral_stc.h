@@ -50,6 +50,40 @@ public:
                                         int &multiple_pass_counter,
                                         int &visited_counter);
 
+  /**
+     * Find a path that does the boustrophedon pattern starting from init until a dead end is reached in the grid
+     * @param grid 2D grid of bools. true == occupied/blocked/obstacle
+     * @param init start position
+     * @param visited all the nodes visited by the boustrophedon pattern
+     * @return list of nodes that form the boustrophedon pattern
+     */
+  static std::list<gridNode_t> boustrophedon(std::vector<std::vector<bool>> const& grid, std::list<gridNode_t>& init,
+                                               std::vector<std::vector<bool>>& visited);
+
+  // ????????? Why is init a list?
+    /**
+     * Perform Boustrophedon-STC (Spanning Tree Coverage) coverage path planning.
+     * In essence, the robot moves forward until an obstacle or visited node is met, then turns right or left (making a
+     * boustrophedon pattern) When stuck in the middle of the boustrophedon, use A* to get out again and start a new
+     * boustrophedon, until a* can't find a path to uncovered cells
+     * @param grid
+     * @param init
+     * @return
+     */
+  static std::list<Point_t> boustrophedon_stc(std::vector<std::vector<bool>> const& grid, Point_t& init,
+                                                int& multiple_pass_counter, int& visited_counter);
+
+  /**
+  *crete sub regions
+  * @param environment
+  * @param sub_width
+  * @param sub_height
+  * @return sub_regions // return the
+  */
+
+  static std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
+                                                         int sub_width, int sub_height);
+
 
 private:
   /**
