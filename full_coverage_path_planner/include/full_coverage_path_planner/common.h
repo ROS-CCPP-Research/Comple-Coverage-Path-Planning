@@ -127,6 +127,8 @@ void printGrid(std::vector<std::vector<bool> > const& grid,
  */
 void printGrid(std::vector<std::vector<bool> > const& grid);
 
+void printGridBinary(std::vector<std::vector<bool> > const& grid);
+
 /**
  * Convert 2D grid of bools to a list of Point_t
  * @param grid 2D grid representing a map
@@ -158,5 +160,8 @@ void addNodeToList(int x2, int y2, std::list<gridNode_t>& pathNodes, std::vector
  */
 int dirWithMostSpace(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
                      std::vector<std::vector<bool>> const& visited, int ignoreDir);
+
+void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment,
+                               int& explored_height, int& explored_width);
 
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

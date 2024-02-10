@@ -287,6 +287,17 @@ void printGrid(std::vector<std::vector<bool> > const& grid)
   }
 }
 
+void printGridBinary(std::vector<std::vector<bool> > const& grid)
+{
+  for (const auto& row : grid) {
+        for (bool cell : row) {
+            // Print '1' for true and '0' for false
+            std::cout << (cell ? "1 " : "0 ");
+        }
+        std::cout << std::endl;
+    }
+}
+
 std::list<Point_t> map_2_goals(std::vector<std::vector<bool> > const& grid, bool value_to_search)
 {
   std::list<Point_t> goals;
@@ -382,3 +393,28 @@ int dirWithMostSpace(int x_init, int y_init, int nCols, int nRows, std::vector<s
     }
     return robot_dir;
 }
+
+void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment,
+                               int& explored_height, int& explored_width) {
+    int min_x = environment[0].size(); // Set to maximum possible value
+    int max_x = 0;
+    int min_y = environment.size();    // Set to maximum possible value
+    int max_y = 0;
+
+    // Iterate through the environment grid to find the boundaries of the explored area
+    for (int y = 0; y < environment.size(); ++y) {
+        for (int x = 0; x < environment[0].size(); ++x) {
+            if (environment[y][x]) { // Explored area
+                min_x = std::min(min_x, x);
+                max_x = std::max(max_x, x);
+                min_y = std::min(min_y, y);
+                max_y = std::max(max_y, y);
+            }
+        }
+    }
+
+    // Calculate dimensions of the explored area
+    explored_height = max_y - min_y + 1;
+    explored_width = max_x - min_x + 1;
+}
+

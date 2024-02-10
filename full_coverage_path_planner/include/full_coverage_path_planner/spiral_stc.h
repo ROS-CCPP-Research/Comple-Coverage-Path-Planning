@@ -85,6 +85,17 @@ public:
                                                          int sub_width, int sub_height);
 
 
+  /**
+  *crete sub regions
+  * @param environment
+  * @param sub_width
+  * @param sub_height
+  * @return sub_regions // return the
+  */
+  static std::list<std::vector<Point_t>> explore_subregions(const std::vector<std::vector<bool>>& environment,
+                                                               int sub_width, int sub_height,int sub_area_count);
+
+
 private:
   /**
    * @brief Given a goal pose in the world, compute a plan
