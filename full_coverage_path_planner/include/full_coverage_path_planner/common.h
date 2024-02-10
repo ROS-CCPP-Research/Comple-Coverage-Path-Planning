@@ -12,9 +12,15 @@ typedef struct
 }
 Point_t;
 
-inline std::ostream &operator << (std::ostream &os, Point_t &p)
-{
-  return os << "(" << p.x << ", " << p.y << ")";
+// Define comparison operator outside the structure definition
+// bool operator<(const Point_t& lhs, const Point_t& rhs) {
+//     // Compare based on x and y values
+//     return (lhs.x < rhs.x) || (lhs.x == rhs.x && lhs.y < rhs.y);
+// }
+
+// Define output stream operator for Point_t
+inline std::ostream &operator<<(std::ostream &os, Point_t &p) {
+    return os << "(" << p.x << ", " << p.y << ")";
 }
 
 typedef struct

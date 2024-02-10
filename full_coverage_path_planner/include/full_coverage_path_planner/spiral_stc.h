@@ -82,7 +82,7 @@ public:
   */
 
   static std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
-                                                         int sub_width, int sub_height)
+                                                         int sub_width, int sub_height);
 
 
 private:

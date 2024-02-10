@@ -51,8 +51,10 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
   }
 }
 
-std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
+std::list<std::vector<Point_t>> SpiralSTC::boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
                                                          int sub_width, int sub_height) {
+
+  std::list<std::vector<Point_t>> sub_regions;
 
   // Iterate through the environment grid, starting from the top-left corner
   for (int y = 0; y < environment.size(); y += sub_height) {
@@ -60,9 +62,10 @@ std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::
       // Create a new sub-region with appropriate boundaries
       std::vector<Point_t> sub_region = {
         {x, y},  // Top-left corner
-        {std::min(x + sub_width, environment[0].size() - 1), y},  // Top-right corner
-        {std::min(x + sub_width, environment[0].size() - 1), std::min(y + sub_height, environment.size() - 1)}, // Bottom-right corner
-        {x, std::min(y + sub_height, environment.size() - 1)}  // Bottom-left corner
+        {std::min(static_cast<unsigned long> (x + sub_width), environment[0].size() - 1), y},  // Top-right corner
+        {std::min(static_cast<unsigned long> (x + sub_width), environment[0].size() - 1), 
+          std::min(static_cast<unsigned long> (y + sub_height), environment.size() - 1)}, // Bottom-right corner
+        {x, std::min(static_cast<unsigned long> (y + sub_height), environment.size() - 1)}  // Bottom-left corner
       };
       sub_regions.push_back(sub_region);
     }
@@ -178,6 +181,7 @@ std::list<gridNode_t> SpiralSTC::boustrophedon(std::vector<std::vector<bool>> co
                 // direction
                 if (!(pattern_dir_ == east || pattern_dir_ == west))
                 {
+                    
                     if (validMove(x2, y2 + 1, nCols, nRows, grid, visited))
                     {
                         pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, north);
@@ -324,7 +328,15 @@ std::list<Point_t> SpiralSTC::boustrophedon_stc(std::vector<std::vector<bool>> c
         // boustrophedon pattern from current position
         // goal ****-
         pathNodes = boustrophedon(grid, pathNodes, visited);
+
+        // std::cout << "path nodes: ";
+        // for (const auto& node : pathNodes) {
+        //   // Print specific information from gridNode_t here (e.g., coordinates, value)
+        //   std::cout << "(" << node.pos.x << ", " << node.pos.y << "), ";
+        // }
+        // std::cout <<"---------------------------------------------------------"<< std::endl;
         // return a list of points***
+        
 #ifdef DEBUG_PLOT
         ROS_INFO("Visited grid updated after boustrophedon:");
         printGrid(grid, visited, pathNodes, PatternStart, pathNodes.back());
@@ -390,15 +402,19 @@ std::list<gridNode_t> SpiralSTC::spiral(std::vector<std::vector<bool> > const& g
                                         std::vector<std::vector<bool> >& visited)
 {
   int dx, dy, dx_prev, x2, y2, i, nRows = grid.size(), nCols = grid[0].size();
+
   // Spiral filling of the open space
   // Copy incoming list to 'end'
   std::list<gridNode_t> pathNodes(init);
+
   // Create iterator for gridNode_t list and let it point to the last element of end
   std::list<gridNode_t>::iterator it = --(pathNodes.end());
+
   if (pathNodes.size() > 1)  // if list is length 1, keep iterator at end
     it--;                    // Let iterator point to second to last element
 
   gridNode_t prev = *(it);
+  
   bool done = false;
   while (!done)
   {

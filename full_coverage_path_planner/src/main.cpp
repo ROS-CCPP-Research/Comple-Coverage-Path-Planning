@@ -12,6 +12,11 @@
 
 using PoseStamped = geometry_msgs::PoseStamped;
 
+inline bool operator<(const Point_t& lhs, const Point_t& rhs) {
+    // Compare based on x and y values
+    return (lhs.x < rhs.x) || (lhs.x == rhs.x && lhs.y < rhs.y);
+}
+
 static double euDist2D(const PoseStamped& p1, const PoseStamped& p2)
 {
     return sqrt(pow(p1.pose.position.x - p2.pose.position.x, 2) + pow(p1.pose.position.y - p2.pose.position.y, 2));
@@ -33,14 +38,22 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
 
     std::string start_pose, robotNamespace;
-    float robotRadius;
+    float robotRadius,tool_radius;
+    int sub_width;
+    int sub_height;
 
     // Load Parameters
     ros::param::get("~start_pose", start_pose);
     ros::param::get("~robot_radius", robotRadius);
+    ros::param::get("~tool_radius", tool_radius);
     ros::param::get("~robot_namespace", robotNamespace);
+    ros::param::get("~sub_width", sub_width);
+    ros::param::get("~sub_height", sub_height);
 
     auto occ = ros::topic::waitForMessage<nav_msgs::OccupancyGrid>("map");
+
+
+    const nav_msgs::OccupancyGrid& occ_grid = *occ;
 
     std::vector<std::vector<bool>> grid;  // Binary matrix for path planning
     full_coverage_path_planner::SpiralSTC planner;
@@ -61,9 +74,73 @@ int main(int argc, char** argv)
     }
 
     // Convert occupancy grid to binary matrix
-    planner.parseGrid(*occ, grid, robotRadius, robotRadius, pose, scaled);
+    planner.parseGrid(*occ, grid, robotRadius, tool_radius, pose, scaled);
 
-    full_coverage_path_planner::SpiralSTC::boustrophedon_subregions(grid,sub_width,sub_height)
+
+    // std::list<std::vector<Point_t>> sub_regions = full_coverage_path_planner::SpiralSTC::boustrophedon_subregions(grid,sub_width,sub_height);
+
+    // std::cout<<"subb count"<<sub_regions.size()<<std::endl;
+
+
+    // std::vector<std::vector<bool>> sub_grid;
+
+    // for (const auto& sub_region : sub_regions) {
+
+    //     Point_t start_position = sub_region.front();
+    //     // Extract sub-grid boundaries from sub_region points
+    //     int min_x = std::min_element(sub_region.begin(), sub_region.end())->x;
+    //     int max_x = std::max_element(sub_region.begin(), sub_region.end())->x;
+    //     int min_y = std::min_element(sub_region.begin(), sub_region.end())->y;
+    //     int max_y = std::max_element(sub_region.begin(), sub_region.end())->y;
+
+    // // std::cout << "Start position of sub-region: (" << start_position.x << "," << start_position.y <<")" << std::endl;
+
+    // // Copy relevant portion from the main grid
+    // sub_grid.clear();
+    // for (int y = min_y; y <= max_y; ++y) {
+    //     sub_grid.push_back(std::vector<bool>(grid[y].begin() + min_x, grid[y].begin() + max_x + 1));
+    // }
+
+
+    // PoseStamped sub_Pose;  // This is the point from which path planning starts
+
+    // pose.pose.position.x = start_position.x;
+    // pose.pose.position.y = start_position.y;
+    // pose.pose.position.z = 0.0; // Assuming z-coordinate is 0
+    // pose.pose.orientation.x = 0.0; // Assuming orientation x,y,z,w are all 0
+    // pose.pose.orientation.y = 0.0;
+    // pose.pose.orientation.z = 0.0;
+    // pose.pose.orientation.w = 1.0; // Assuming orientation w is 1 for no rotation
+    // pose.header.frame_id = "map"; // Assuming the frame is "map"
+
+
+    // Point_t sub_Scaled;
+
+    // sub_Scaled.x = static_cast<unsigned int>(clamp((pose.pose.position.x - occ_grid.info.origin.position.x) / dmax(floor(tool_radius / occ_grid.info.resolution), 1) * occ_grid.info.resolution, 0.0,
+    //                          floor(occ_grid.info.width / dmax(floor(tool_radius / occ_grid.info.resolution), 1) * occ_grid.info.resolution)));
+    // sub_Scaled.y = static_cast<unsigned int>(clamp((pose.pose.position.y - occ_grid.info.origin.position.y) / dmax(floor(tool_radius / occ_grid.info.resolution), 1) * occ_grid.info.resolution, 0.0,
+    //                          floor(occ_grid.info.height / dmax(floor(tool_radius / occ_grid.info.resolution), 1) * occ_grid.info.resolution)));
+
+    
+
+    // int multiple_pass_counter, visited_counter;
+    
+    // std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
+
+    // std::cout<< "sub grid start path"<<"("<<sub_path.front().x<<","<<sub_path.front().y<<")"<<std::endl;
+    // std::cout<< "sub grid end path"<<"("<<sub_path.back().x<<","<<sub_path.back().y<<")"<<std::endl;
+    // std::cout<<"Lenght"<<sub_path.size()<<std::endl;
+
+    // std::cout<<"-------------"<<std::endl;
+
+    // Convert sub-path points back to original grid coordinates
+    // ... adjust path points based on sub-region origin
+
+    // Store the sub-path in a data structure (e.g., list or vector)
+    // ... (replace placeholder)
+    
+
+
 
     // Boustrophedon path planning
     int multiple_pass_counter, visited_counter;
@@ -83,8 +160,8 @@ int main(int argc, char** argv)
     pathMsg.poses = plan;
     planPub.publish(pathMsg);
 
-    // Inorder to divide the path among agents, we need more points in between the corner points of the path.
-    // We just perform a linear parametric up-sampling
+    // // Inorder to divide the path among agents, we need more points in between the corner points of the path.
+    // // We just perform a linear parametric up-sampling
     std::vector<PoseStamped> upSampled;
 
     ROS_INFO("Path computed. Up-sampling...");
