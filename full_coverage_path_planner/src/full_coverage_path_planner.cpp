@@ -211,6 +211,12 @@ bool FullCoveragePathPlanner::parseGrid(nav_msgs::OccupancyGrid const& cpp_grid_
   scaledStart.y = static_cast<unsigned int>(clamp((realStart.pose.position.y - grid_origin_.y) / tile_size_, 0.0,
                              floor(cpp_grid_.info.height / tile_size_)));
 
+  std::cout<<"inside parse grid_origin_ x : "<<grid_origin_.x <<std::endl;
+  std::cout<<"inside parse grid_origin_ y : "<<grid_origin_.y <<std::endl;
+
+  std::cout<<"inside parse scale x : "<<scaledStart.x <<std::endl;
+  std::cout<<"inside parse scale y : "<<scaledStart.y <<std::endl;
+
   // Scale grid
   for (iy = 0; iy < nRows; iy = iy + nodeSize)
   {
