@@ -1,5 +1,4 @@
 <launch>
-    <!-- <arg name="map" default="$(find full_coverage_path_planner)/maps/house01/map.yaml"/> -->
     <arg name="map" default="$(find full_coverage_path_planner)/maps/house02/map.yaml"/>
 
     <!--    Publish map-->
