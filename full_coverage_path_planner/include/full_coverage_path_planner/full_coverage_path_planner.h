@@ -113,6 +113,7 @@ public:
   std::string start_pose;
   costmap_2d::Costmap2DROS* costmap_ros_;
   costmap_2d::Costmap2D* costmap_;
+  std::vector<std::list<Point_t>> sub_paths_array;
   
   struct spiral_cpp_metrics_type
   {

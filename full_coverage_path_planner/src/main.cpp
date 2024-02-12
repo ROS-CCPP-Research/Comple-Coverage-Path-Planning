@@ -32,6 +32,7 @@ static PoseStamped parametricInterp1(const PoseStamped& p1, const PoseStamped& p
     return p;
 }
 
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "test");
@@ -99,6 +100,13 @@ int main(int argc, char** argv)
 
     std::list<Point_t> merged_path;
 
+    std::vector<ros::Publisher> sub_waypointPublishers;
+    sub_waypointPublishers.reserve(sub_regions.size());
+
+    std::vector<nav_msgs::Path> sub_agentPaths(sub_regions.size());
+
+    size_t index = 0;
+
     for (const auto& sub_region : sub_regions) {
 
         Point_t start_position = sub_region.front();
@@ -152,8 +160,10 @@ int main(int argc, char** argv)
     std::cout<< "sub_Scaled point"<<sub_Scaled<<std::endl;
 
     int multiple_pass_counter, visited_counter;
+
+    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter);
     
-    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
+    // std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
     
     std::cout<<"Lenght : "<<sub_path.size()<<std::endl;
 
@@ -186,6 +196,27 @@ int main(int argc, char** argv)
 
     std::cout<<"-------------"<<std::endl;
 
+    planner.sub_paths_array.push_back(sub_path);
+
+    std::vector<PoseStamped> sub_plan;
+    sub_plan.reserve(sub_path.size());
+    planner.parsePointlist2Plan(pose, sub_path, sub_plan);
+
+    std::stringstream ss;
+    ss << robotNamespace << "_" << index << "/waypoints";
+    sub_waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
+
+    sub_agentPaths[index].header.frame_id = "map";
+    sub_agentPaths[index].header.stamp = ros::Time::now();
+    sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin())
+
+    for (const auto& pose : sub_plan)
+    {
+        sub_agentPaths[index].poses.push_back(pose);
+    }
+
+    sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+
     merged_path.splice(merged_path.end(), sub_path);
 
     // Convert sub-path points back to original grid coordinates
@@ -193,12 +224,10 @@ int main(int argc, char** argv)
 
     // Store the sub-path in a data structure (e.g., list or vector)
     // ... (replace placeholder)
+    ++index;
     }
     
     
-
-
-
     // Boustrophedon path planning
 
     // int multiple_pass_counter, visited_counter;
@@ -222,64 +251,66 @@ int main(int argc, char** argv)
 
     // // // Inorder to divide the path among agents, we need more points in between the corner points of the path.
     // // // We just perform a linear parametric up-sampling
-    std::vector<PoseStamped> upSampled;
+    // std::vector<PoseStamped> upSampled;
 
-    ROS_INFO("Path computed. Up-sampling...");
-    for (size_t i = 0; i < plan.size() - 1; ++i)
-    {
-        double mul = 0.5 * euDist2D(plan[i], plan[i + 1]) / floor(euDist2D(plan[i], plan[i + 1]) / robotRadius);
-        double a = 0;
-        while (a < 1)
-        {
-            upSampled.push_back(parametricInterp1(plan[i], plan[i + 1], a));
-            a += mul;
-        }
-        upSampled.push_back(plan[i + 1]);
-    }
-    ROS_INFO("Up-sampling complete");
-    ROS_INFO("Waiting for number of agents");
+    // ROS_INFO("Path computed. Up-sampling...");
+    // for (size_t i = 0; i < plan.size() - 1; ++i)
+    // {
+    //     double mul = 0.5 * euDist2D(plan[i], plan[i + 1]) / floor(euDist2D(plan[i], plan[i + 1]) / robotRadius);
+    //     double a = 0;
+    //     while (a < 1)
+    //     {
+    //         upSampled.push_back(parametricInterp1(plan[i], plan[i + 1], a));
+    //         a += mul;
+    //     }
+    //     upSampled.push_back(plan[i + 1]);
+    // }
+    // ROS_INFO("Up-sampling complete");
+    // ROS_INFO("Waiting for number of agents");
 
-    // Prepare publishers
-    size_t nAgents = ros::topic::waitForMessage<std_msgs::UInt8>("number_of_agents")->data;
-    std::vector<ros::Publisher> waypointPublishers;
-    waypointPublishers.reserve(nAgents);
-    for (auto i = 0; i < nAgents; ++i)
-    {
-        std::stringstream ss;
-        ss << robotNamespace << "_" << i << "/waypoints";
-        waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
-    }
+    // // // Prepare publishers
+    // size_t nAgents = ros::topic::waitForMessage<std_msgs::UInt8>("number_of_agents")->data;
+    // std::vector<ros::Publisher> waypointPublishers;
+    // waypointPublishers.reserve(nAgents);
+    // for (auto i = 0; i < nAgents; ++i)
+    // {
+    //     std::stringstream ss;
+    //     ss << robotNamespace << "_" << i << "/waypoints";
+    //     waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
+    // }
 
-    // Now divide the path approximately equally for each agent
-    std::vector<nav_msgs::Path> agentPaths(nAgents);
+    // // Now divide the path approximately equally for each agent
+    // std::vector<nav_msgs::Path> agentPaths(nAgents);
 
-    size_t length = upSampled.size() / nAgents;
-    size_t leftover = upSampled.size() % nAgents;
-    size_t begin = 0, end = 0;
+    // size_t length = upSampled.size() / nAgents;
+    // size_t leftover = upSampled.size() % nAgents;
+    // size_t begin = 0, end = 0;
 
-    ROS_INFO("Publishing paths");
-    for (size_t i = 0; i < std::min(nAgents, upSampled.size()); ++i)
-    {
-        end += leftover > 0 ? (length + !!(leftover--)) : length;
+    // ROS_INFO("Publishing paths");
+    // for (size_t i = 0; i < std::min(nAgents, upSampled.size()); ++i)
+    // {
+    //     end += leftover > 0 ? (length + !!(leftover--)) : length;
 
-        agentPaths[i].header.frame_id = "map";
-        agentPaths[i].header.stamp = ros::Time::now();
-        agentPaths[i].poses.reserve(end - begin);
+    //     agentPaths[i].header.frame_id = "map";
+    //     agentPaths[i].header.stamp = ros::Time::now();
+    //     agentPaths[i].poses.reserve(end - begin);
 
-        for (size_t j = begin; j < end; ++j)
-        {
-            agentPaths[i].poses.push_back(upSampled[j]);
-        }
-        waypointPublishers[i].publish(agentPaths[i]);
-        begin = end;
-    }
-    ROS_ERROR_STREAM(upSampled.size());
-    size_t s = 0;
-    for (size_t i = 0; i < nAgents; ++i)
-    {
-        s += agentPaths[i].poses.size();
-    }
-    ROS_ERROR_STREAM(s);
+    //     for (size_t j = begin; j < end; ++j)
+    //     {
+    //         agentPaths[i].poses.push_back(upSampled[j]);
+    //     }
+    //     waypointPublishers[i].publish(agentPaths[i]);
+    //     begin = end;
+    // }
+
+    // ROS_ERROR_STREAM(upSampled.size());
+    // size_t s = 0;
+    // for (size_t i = 0; i < nAgents; ++i)
+    // {
+    //     s += agentPaths[i].poses.size();
+    // }
+    // ROS_ERROR_STREAM(s);
+
     ros::spin();
     return EXIT_SUCCESS;
 }
