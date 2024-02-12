@@ -287,6 +287,17 @@ void printGrid(std::vector<std::vector<bool> > const& grid)
   }
 }
 
+void printGridBinary(std::vector<std::vector<bool> > const& grid)
+{
+  for (const auto& row : grid) {
+        for (bool cell : row) {
+            // Print '1' for true and '0' for false
+            std::cout << (cell ? "1 " : "0 ");
+        }
+        std::cout << std::endl;
+    }
+}
+
 std::list<Point_t> map_2_goals(std::vector<std::vector<bool> > const& grid, bool value_to_search)
 {
   std::list<Point_t> goals;
@@ -306,3 +317,104 @@ std::list<Point_t> map_2_goals(std::vector<std::vector<bool> > const& grid, bool
   }
   return goals;
 }
+
+bool validMove(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited)
+{
+    return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen);  // the path node is unvisited
+    // ??????????? meaning, not visited, and no obstacles.
+}
+
+void addNodeToList(int x2, int y2, std::list<gridNode_t>& pathNodes, std::vector<std::vector<bool>>& visited)
+{
+    Point_t new_point = {x2, y2};
+    // clang-format off
+    gridNode_t new_node = {  // NOLINT
+        new_point,  // Point: x,y
+        0,          // Cost
+        0,          // Heuristic
+    };
+    // clang-format on
+    pathNodes.push_back(
+        new_node);  // turn point into gridnode and pushback in to path node to add new node!! ** add make it visited
+    visited[y2][x2] = eNodeVisited;  // Close node
+    return;
+}
+
+int dirWithMostSpace(int x_init, int y_init, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+                     std::vector<std::vector<bool>> const& visited, int ignoreDir)
+{
+    // this array stores how far the robot can travel in a straight line for each direction
+    int free_space_in_dir[5] = {0};
+    // for each direction
+    for (int i = 1; i < 5; i++)
+    {
+        // start from starting pos
+        int x2 = x_init;
+        int y2 = y_init;
+        do
+        {  // loop until hit wall
+            switch (i)
+            {
+            case east:
+                x2++;
+                break;
+            case west:
+                x2--;
+                break;
+            case north:
+                y2++;
+                break;
+            case south:
+                y2--;
+                break;
+            default:
+                break;
+            }
+            free_space_in_dir[i]++;
+            // counter for space
+        } while (validMove(x2, y2, nCols, nRows, grid, visited));  // NOLINT
+    }
+
+    //????????? use the biggest value***->
+    // set initial direction towards direction with most travel possible
+
+    int indexValue = 0;
+    int robot_dir = 1;
+    for (int i = 1; i <= 4; i++)
+    {
+        // std::cout << "free space in " << i << ": " << free_space_in_dir[i] << std::endl;
+        if (free_space_in_dir[i] > indexValue && i != ignoreDir)
+        {
+            robot_dir = i;
+            indexValue = free_space_in_dir[i];
+        }
+    }
+    return robot_dir;
+}
+
+void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment,
+                               int& explored_height, int& explored_width) {
+    int min_x = environment[0].size(); // Set to maximum possible value
+    int max_x = 0;
+    int min_y = environment.size();    // Set to maximum possible value
+    int max_y = 0;
+
+    // Iterate through the environment grid to find the boundaries of the explored area
+    for (int y = 0; y < environment.size(); ++y) {
+        for (int x = 0; x < environment[0].size(); ++x) {
+            if (environment[y][x]) { // Explored area
+                min_x = std::min(min_x, x);
+                max_x = std::max(max_x, x);
+                min_y = std::min(min_y, y);
+                max_y = std::max(max_y, y);
+            }
+        }
+    }
+
+    // Calculate dimensions of the explored area
+    explored_height = max_y - min_y + 1;
+    explored_width = max_x - min_x + 1;
+}
+
