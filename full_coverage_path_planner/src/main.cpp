@@ -208,7 +208,7 @@ int main(int argc, char** argv)
 
     sub_agentPaths[index].header.frame_id = "map";
     sub_agentPaths[index].header.stamp = ros::Time::now();
-    sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin())
+    sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin());
 
     for (const auto& pose : sub_plan)
     {
