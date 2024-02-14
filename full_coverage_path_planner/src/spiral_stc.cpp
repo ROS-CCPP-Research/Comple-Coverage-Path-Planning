@@ -75,47 +75,6 @@ std::list<std::vector<Point_t>> SpiralSTC::boustrophedon_subregions(const std::v
 }
 
 
-// std::list<std::vector<Point_t>> SpiralSTC::explore_subregions(const std::vector<std::vector<bool>>& environment,
-//                                                                int explored_width, int explored_height,
-//                                                                int sub_area_count) {
-//     std::list<std::vector<Point_t>> sub_regions;
-
-//     // Calculate the number of columns and rows based on the sub_area_count
-//     int num_columns = std::sqrt(sub_area_count);
-//     int num_rows = sub_area_count / num_columns;
-
-//     // Calculate the width and height of each sub-region
-//     int sub_region_width = explored_width / num_columns;
-//     int sub_region_height = explored_height / num_rows;
-
-//     std::cout<<"sub_region_width : "<<sub_region_width<<std::endl;
-//     std::cout<<"sub_region_height : "<<sub_region_height<<std::endl;
-
-//     // Calculate the starting point of the explored area
-//     int start_x = (environment[0].size() - explored_width) / 2;  // Adjust as needed
-//     int start_y = (environment.size() - explored_height) / 2;     // Adjust as needed
-
-//     // Iterate through the explored area and create sub-regions
-//     for (int row = 0; row < num_rows; ++row) {
-//         for (int col = 0; col < num_columns; ++col) {
-//             int sub_region_x = start_x + col * sub_region_width;
-//             int sub_region_y = start_y + row * sub_region_height;
-
-//             // Create a new sub-region with appropriate boundaries
-//             std::vector<Point_t> sub_region = {
-//                 {sub_region_x, sub_region_y},  // Top-left corner
-//                 {sub_region_x + sub_region_width - 1, sub_region_y},  // Top-right corner
-//                 {sub_region_x + sub_region_width - 1, sub_region_y + sub_region_height - 1},  // Bottom-right corner
-//                 {sub_region_x, sub_region_y + sub_region_height - 1}  // Bottom-left corner
-//             };
-//             sub_regions.push_back(sub_region);
-//         }
-//     }
-
-//     return sub_regions;
-// }
-
-
 std::list<std::vector<Point_t>> SpiralSTC::explore_subregions(const std::vector<std::vector<bool>>& environment,
                                                                int explored_width, int explored_height,
                                                                int sub_area_count) {
