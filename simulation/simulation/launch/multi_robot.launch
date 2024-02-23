@@ -24,4 +24,7 @@
         <param name="robot_namespace" value="robot"/>
     </node>
 
+    <node name="lidar_sensor" pkg="simulation" type="lidar_sensor.py" output="screen">
+    </node>
+
 </launch>
