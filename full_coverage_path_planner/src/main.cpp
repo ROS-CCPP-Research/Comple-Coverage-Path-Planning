@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     full_coverage_path_planner::SpiralSTC planner;
     Point_t scaled;    // This will hold the index of the start location in binary matrix
     PoseStamped pose;  // This is the point from which path planning starts
-    int explored_height, explored_width;
+    // int explored_height, explored_width;
     
     {
         std::stringstream ss(start_pose);
@@ -80,16 +80,40 @@ int main(int argc, char** argv)
     // Convert occupancy grid to binary matrix
     planner.parseGrid(*occ, grid, robotRadius, tool_radius, pose, scaled);
 
+    std::cout<<"scalled x : "<<scaled.x<<","<<"scalled y  : "<<scaled.y<<std::endl;
+
     printGridBinary(grid);
-
-    getExploredAreaDimensions(grid, explored_height, explored_width);
-
-    std::cout<<"explored_height : "<<explored_height<<std::endl;
-    std::cout<<"explored_width : "<<explored_width<<std::endl;
 
     std::cout<<"robotCount"<<robotCount<<std::endl;
 
+    std::vector<std::vector<bool>> free_visited(grid.size(), std::vector<bool>(grid[0].size(), false));
 
+    // List to store the boundary points of the free area
+    std::vector<Point_t> boundary;
+
+    explore_free_area(grid, scaled.x, scaled.y, free_visited, boundary);    
+
+    // std::vector<std::vector<bool>> explored_free_area_grid = create_explored_grid(grid,boundary);
+
+    // printGridBinary(explored_free_area_grid);
+        
+    
+    print_matrix(grid,boundary);
+
+
+
+    // std::list<std::vector<Point_t>> sub_regions = partition_free_area(boundary, robotCount);
+
+    // std::cout << "\nPartitioned Areas:\n";
+    // int partition_index = 1;
+    // for (std::vector<Point_t>& partition : sub_regions) {
+    //     std::cout << "Partition " << partition_index++ << ":\n";
+    //     print_matrix(grid,partition);
+    // }
+
+
+    int explored_width = grid.size();
+    int explored_height = grid[0].size();
     std::list<std::vector<Point_t>> sub_regions = full_coverage_path_planner::SpiralSTC::explore_subregions(grid,explored_width,explored_height,robotCount);
 
     std::cout<<"sub count"<<sub_regions.size()<<std::endl;
@@ -140,8 +164,9 @@ int main(int argc, char** argv)
     sub_Pose.pose.orientation.w = 1.0; // Assuming orientation w is 1 for no rotation
     sub_Pose.header.frame_id = "map"; // Assuming the frame is "map"
 
+
     std::cout<<"start position of sub grid : "<<sub_Pose.pose.position<<std::endl;
-    std::cout<<"sub grid position : "<<sub_grid[0][0]<<std::endl;
+    std::cout<<"sub grid value start position : "<<sub_grid[sub_Pose.pose.position.x][sub_Pose.pose.position.y]<<std::endl;
 
 
     Point_t sub_Scaled;
@@ -159,9 +184,26 @@ int main(int argc, char** argv)
     
     std::cout<< "sub_Scaled point"<<sub_Scaled<<std::endl;
 
+    int sub_nRows = sub_grid.size();
+    int sub_nCols = sub_grid[0].size();
+
+    std::vector<std::vector<bool>> sub_visited(sub_nRows, std::vector<bool>(sub_nCols, false));
+    std::vector<std::vector<Node*>> graph(sub_nRows, std::vector<Node*>(sub_nCols, nullptr));
+
+    for (int i = 0; i < sub_nRows; ++i) {
+        for (int j = 0; j < sub_nCols; ++j) {
+            if (grid[i][j] == 0 && !sub_visited[i][j]) {
+                bfs(i, j,sub_nRows,sub_nCols,sub_grid, sub_visited,graph);
+            }
+        }
+    }
+    // printGraph(graph,sub_visited.size(),sub_visited[0].size(),sub_visited);
+    // visualizeGraph(graph);
+
+
     int multiple_pass_counter, visited_counter;
 
-    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter);
+    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter);
     
     // std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
     
@@ -225,6 +267,7 @@ int main(int argc, char** argv)
     // Store the sub-path in a data structure (e.g., list or vector)
     // ... (replace placeholder)
     ++index;
+    break;
     }
     
     

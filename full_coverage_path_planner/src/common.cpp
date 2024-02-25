@@ -3,8 +3,11 @@
 #include <limits>
 #include <list>
 #include <vector>
-
+#include <algorithm> 
 #include <full_coverage_path_planner/common.h>
+
+std::vector<std::pair<int, int>> bfs_directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
 
 int distanceToClosestPoint(Point_t poi, std::list<Point_t> const& goals)
 {
@@ -394,6 +397,8 @@ int dirWithMostSpace(int x_init, int y_init, int nCols, int nRows, std::vector<s
     return robot_dir;
 }
 
+
+
 void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment,
                                int& explored_height, int& explored_width) {
     int min_x = environment[0].size(); // Set to maximum possible value
@@ -418,3 +423,191 @@ void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment
     explored_width = max_x - min_x + 1;
 }
 
+void bfs(int x, int y,int sub_nRows, int sub_nCols,
+          std::vector<std::vector<bool>> const& sub_grid, 
+          std::vector<std::vector<bool>>& visited,
+          std::vector<std::vector<Node*>>& graph) {
+
+
+    std::queue<std::pair<int, int>> q;
+    q.push({x, y});
+    visited[x][y] = true;
+
+    Node* startNode = new Node(x, y);
+    graph[x][y] = startNode;
+
+    while (!q.empty()) {
+        std::pair<int, int> curr = q.front();
+        q.pop();
+        int currX = curr.first;
+        int currY = curr.second;
+
+        // Process current node
+        std::cout << "(" << currX << ", " << currY << "),";
+
+        // Explore neighbors
+        for (const auto& dir : bfs_directions) {
+            int newX = currX + dir.first;
+            int newY = currY + dir.second;
+            if (newX >= 0 && newX < sub_nRows && newY >= 0 && newY < sub_nCols &&
+                sub_grid[newX][newY] == 0 && !visited[newX][newY]) {
+                q.push({newX, newY});
+                visited[newX][newY] = true;
+
+                Node* newNode = new Node(newX, newY);
+                graph[newX][newY] = newNode;
+
+                // Connect the new node to the current node
+                graph[currX][currY]->neighbors.push_back(newNode);
+            }
+        }
+    }
+}
+
+void visualizeGraph(const std::vector<std::vector<Node*>>& graph) {
+    std::ofstream dotFile("graph.dot");
+    dotFile << "graph {\n";
+    std::unordered_set<Node*> visited;
+
+    for (const auto& row : graph) {
+        for (const auto& node : row) {
+            if (node && visited.find(node) == visited.end()) {
+                visited.insert(node);
+                dotFile << "  \"" << node->x << "_" << node->y << "\";\n"; // Enclose node name in double quotes
+                for (const auto& neighbor : node->neighbors) {
+                    dotFile << "  \"" << node->x << "_" << node->y << "\" -- \"" << neighbor->x << "_" << neighbor->y << "\";\n"; // Enclose node names in double quotes
+                }
+            }
+        }
+    }
+
+    dotFile << "}\n";
+    dotFile.close();
+
+    // Convert dot file to image using Graphviz (dot) command
+    system("dot -Tpng -O graph.dot");
+}
+
+
+void printGraph(const std::vector<std::vector<Node*>>& graph,int sub_nRows, int sub_nCols, std::vector<std::vector<bool>> const& sub_grid) {
+    // Print the nodes and connections in the graph
+    std::cout<<"print graph"<<std::endl;
+    for (int i = 0; i < sub_nRows; ++i) {
+        for (int j = 0; j < sub_nCols; ++j) {
+            if (sub_grid[i][j]) {
+                std::cout << "(" << i << "," << j << "): ";
+                for (const auto& neighbor : graph[i][j]->neighbors) {
+                    std::cout << "(" << neighbor->x << "," << neighbor->y << ") ";
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+}
+
+
+// Function to explore the free area starting from a given point
+void explore_free_area(std::vector<std::vector<bool>>& matrix, int start_x, int start_y, std::vector<std::vector<bool>>& visited, std::vector<Point_t>& boundary) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    // Define the directions to explore: up, down, left, right
+    std::vector<std::pair<int, int>> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    
+    // BFS exploration starting from the given point
+    std::queue<Point_t> q;
+    q.push({start_x, start_y});
+    visited[start_x][start_y] = true;
+    
+    while (!q.empty()) {
+        Point_t current = q.front();
+        q.pop();
+        boundary.push_back(current);
+        
+        for (const auto& dir : directions) {
+            int nx = current.x + dir.first;
+            int ny = current.y + dir.second;
+            if (nx >= 0 && nx < rows && ny >= 0 && ny < cols && matrix[nx][ny] == 0 && !visited[nx][ny]) {
+                q.push({nx, ny});
+                visited[nx][ny] = true;
+            }
+        }
+    }
+    std::sort(boundary.begin(), boundary.end(), comparePoints);
+}
+
+// Function to print the matrix based on the boundary list
+void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            bool inside_boundary = false;
+            for (const auto& point : boundary) {
+                if (point.x == i && point.y == j) {
+                    inside_boundary = true;
+                    break;
+                }
+            }
+            std::cout << (inside_boundary ? '0' : '1') << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+// Function to partition the free area into smaller regions
+std::list<std::vector<Point_t>> partition_free_area(const std::vector<Point_t>& boundary, int partition_count) {
+    std::list<std::vector<Point_t>> partitions;
+    int total_points = boundary.size();
+    int points_per_partition = total_points / partition_count;
+    int remaining_points = total_points % partition_count;
+
+    auto boundary_itr = boundary.begin();
+    for (int i = 0; i < partition_count; ++i) {
+        std::vector<Point_t> current_partition;
+        int partition_size = points_per_partition + (i < remaining_points ? 1 : 0);
+
+        for (int j = 0; j < partition_size; ++j) {
+            // Skip points nearest to 1
+            while (boundary_itr != boundary.end() && distance(*boundary_itr, {0, 0}) < 1) {
+                ++boundary_itr;
+            }
+            if (boundary_itr != boundary.end()) {
+                current_partition.push_back(*boundary_itr);
+                ++boundary_itr;
+            }
+        }
+
+        partitions.push_back(current_partition);
+    }
+
+    return partitions;
+}
+
+std::vector<std::vector<bool>> create_explored_grid(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+
+    std::vector<std::vector<bool>> explored_free_area_grid;
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            bool inside_boundary = false;
+            for (const auto& point : boundary) {
+                if (point.x == i && point.y == j) {
+                    inside_boundary = true;
+                    explored_free_area_grid[i][j] =  0;
+                    break;
+                }
+                else{
+                  explored_free_area_grid[i][j] = 1;
+                  break;
+                }
+            }
+        }
+        
+    }
+    std::cout<<"free grid size : "<<explored_free_area_grid.size()<<std::endl;
+    return explored_free_area_grid;
+}

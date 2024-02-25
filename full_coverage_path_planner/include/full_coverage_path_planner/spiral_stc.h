@@ -38,6 +38,16 @@ public:
                                       std::vector<std::vector<bool> > &visited);
 
   /**
+   * Find a path that spirals inwards from init until an obstacle is seen in the grid
+   * @param grid 2D grid of bools. true == occupied/blocked/obstacle
+   * @param init start position
+   * @param visited all the nodes visited by the spiral
+   * @return list of nodes that form the spiral
+   */
+  static std::list<gridNode_t> new_spiral(std::vector<std::vector<bool> > const &grid, std::list<gridNode_t> &init,
+                                      std::vector<std::vector<bool> > &visited);
+
+  /**
    * Perform Spiral-STC (Spanning Tree Coverage) coverage path planning.
    * In essence, the robot moves forward until an obstacle or visited node is met, then turns right (making a spiral)
    * When stuck in the middle of the spiral, use A* to get out again and start a new spiral, until a* can't find a path to uncovered cells
@@ -46,6 +56,19 @@ public:
    * @return
    */
   static std::list<Point_t> spiral_stc(std::vector<std::vector<bool> > const &grid,
+                                        Point_t &init,
+                                        int &multiple_pass_counter,
+                                        int &visited_counter);
+
+  /**
+   * Perform Spiral-STC (Spanning Tree Coverage) coverage path planning.
+   * In essence, the robot moves forward until an obstacle or visited node is met, then turns right (making a spiral)
+   * When stuck in the middle of the spiral, use A* to get out again and start a new spiral, until a* can't find a path to uncovered cells
+   * @param grid
+   * @param init
+   * @return
+   */
+  static std::list<Point_t> new_spiral_stc(std::vector<std::vector<bool> > const &grid,
                                         Point_t &init,
                                         int &multiple_pass_counter,
                                         int &visited_counter);
@@ -72,18 +95,6 @@ public:
      */
   static std::list<Point_t> boustrophedon_stc(std::vector<std::vector<bool>> const& grid, Point_t& init,
                                                 int& multiple_pass_counter, int& visited_counter);
-
-  /**
-  *crete sub regions
-  * @param environment
-  * @param sub_width
-  * @param sub_height
-  * @return sub_regions // return the
-  */
-
-  static std::list<std::vector<Point_t>> boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
-                                                         int sub_width, int sub_height);
-
 
   /**
   *crete sub regions
