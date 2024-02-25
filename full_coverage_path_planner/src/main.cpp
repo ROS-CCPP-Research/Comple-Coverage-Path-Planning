@@ -91,9 +91,24 @@ int main(int argc, char** argv)
     // List to store the boundary points of the free area
     std::vector<Point_t> boundary;
 
-    explore_free_area(grid, scaled.x, scaled.y, free_visited, boundary);    
+    explore_free_area(grid, scaled.x, scaled.y, free_visited, boundary);   
+ 
 
-    // std::vector<std::vector<bool>> explored_free_area_grid = create_explored_grid(grid,boundary);
+    std::vector<std::vector<bool>> explored_free_area_grid = create_explored_grid(grid,boundary);
+
+    int nRows = explored_free_area_grid.size();
+    int nCols = explored_free_area_grid[0].size();
+
+    std::vector<std::vector<bool>> explored_area_visited(nRows, std::vector<bool>(nCols, false));
+    std::vector<std::vector<Node*>> explored_area_graph(nRows, std::vector<Node*>(nCols, nullptr));
+
+    for (int i = 0; i < nRows; ++i) {
+        for (int j = 0; j < nCols; ++j) {
+            if (grid[i][j] == 0 && !explored_area_visited[i][j]) {
+                bfs(i, j,nRows,nCols,explored_free_area_grid, explored_area_visited,explored_area_graph);
+            }
+        }
+    }
 
     // printGridBinary(explored_free_area_grid);
         
@@ -190,13 +205,13 @@ int main(int argc, char** argv)
     std::vector<std::vector<bool>> sub_visited(sub_nRows, std::vector<bool>(sub_nCols, false));
     std::vector<std::vector<Node*>> graph(sub_nRows, std::vector<Node*>(sub_nCols, nullptr));
 
-    for (int i = 0; i < sub_nRows; ++i) {
-        for (int j = 0; j < sub_nCols; ++j) {
-            if (grid[i][j] == 0 && !sub_visited[i][j]) {
-                bfs(i, j,sub_nRows,sub_nCols,sub_grid, sub_visited,graph);
-            }
-        }
-    }
+    // for (int i = 0; i < sub_nRows; ++i) {
+    //     for (int j = 0; j < sub_nCols; ++j) {
+    //         if (grid[i][j] == 0 && !sub_visited[i][j]) {
+    //             bfs(i, j,sub_nRows,sub_nCols,sub_grid, sub_visited,graph);
+    //         }
+    //     }
+    // }
     // printGraph(graph,sub_visited.size(),sub_visited[0].size(),sub_visited);
     // visualizeGraph(graph);
 
