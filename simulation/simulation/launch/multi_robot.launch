@@ -1,12 +1,12 @@
 <launch>
-    <arg name="map" default="house01"/>
+    <arg name="map" default="modelHouse"/>
 
     <!--    Gazebo world-->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find simulation)/worlds/$(arg map).world"/>
         <arg name="paused" value="true"/>
         <arg name="use_sim_time" value="true"/>
-        <arg name="gui" value="false"/>
+        <arg name="gui" value="true"/>
         <arg name="headless" value="true"/>
         <arg name="debug" value="false"/>
         <arg name="verbose" value="true"/>
