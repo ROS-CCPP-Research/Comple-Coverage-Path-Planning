@@ -443,7 +443,7 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
         int currY = curr.second;
 
         // Process current node
-        std::cout << "(" << currX << ", " << currY << "),";
+        // std::cout << "(" << currX << ", " << currY << "),";
 
         // Explore neighbors
         for (const auto& dir : bfs_directions) {
@@ -499,7 +499,7 @@ void printGraph(const std::vector<std::vector<Node*>>& graph,int sub_nRows, int 
                 for (const auto& neighbor : graph[i][j]->neighbors) {
                     std::cout << "(" << neighbor->x << "," << neighbor->y << ") ";
                 }
-                std::cout << std::endl;
+                // std::cout << std::endl;
             }
         }
     }
