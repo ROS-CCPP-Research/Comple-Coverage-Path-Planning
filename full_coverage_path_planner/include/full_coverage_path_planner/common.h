@@ -17,9 +17,10 @@
 struct Node {
     int x, y;
     std::vector<Node*> neighbors;
-    Node *up, *down, *left, *right; // Pointers to neighboring nodes
+    Node *left;
+    Node *right;
 
-    Node(int x, int y) : x(x), y(y), up(nullptr), down(nullptr), left(nullptr), right(nullptr) {}
+    Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr) {}
 };
 
 
