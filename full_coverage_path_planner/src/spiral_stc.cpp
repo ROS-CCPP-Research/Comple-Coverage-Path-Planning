@@ -609,6 +609,217 @@ std::list<Point_t> SpiralSTC::spiral_stc(std::vector<std::vector<bool> > const& 
   return fullPath;
 }
 
+std::list<gridNode_t> SpiralSTC::new_boustrophedon(std::vector<std::vector<bool>> const& grid,
+                                                      std::list<gridNode_t>& init,
+                                                      std::vector<std::vector<bool>>& visited)
+
+///
+// std::list<gridNode_t> BoustrophedonSTC::boustrophedon(std::vector<std::vector<bool> > const& grid,
+// std::list<gridNode_t>& init, std::vector<std::vector<bool> >& visited, /*/GLOBAL VAR (VERT/HORIZONTAL)/*/)
+{
+    int dx, dy, x2, y2, i, nRows = grid.size(), nCols = grid[0].size();
+    // Mountain pattern filling of the open space
+    // Copy incoming list to 'end'
+    std::list<gridNode_t> pathNodes(init);
+    // Set starting pos
+    x2 = pathNodes.back().pos.x;
+    y2 = pathNodes.back().pos.y;
+    // set initial direction based on space visible from initial pos
+    /*/  IF GLOBAL VAR = 0*/
+
+    int robot_dir = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, point);
+    /*  GLOBAL VAR++*/
+    /*/   if global var ==1 /*/
+    // int robot_dir =
+
+    // set dx and dy based on robot_dir
+    switch (robot_dir)
+    {
+    case east:  // 1
+        dx = +1;
+        dy = 0;
+        break;
+    case west:  // 2
+        dx = -1;
+        dy = 0;
+        break;
+    case north:  // 3
+        dx = 0;
+        dy = +1;
+        break;
+    case south:  // 4
+        dx = 0;
+        dy = -1;
+        break;
+    default:
+        ROS_ERROR(
+            "Full Coverage Path Planner: NO INITIAL ROBOT DIRECTION CALCULATED. "
+            "This is a logic error that must be fixed by editing spiral_stc.cpp. Will travel east for now.");
+        robot_dir = east;
+        dx = +1;
+        dy = 0;
+        break;
+    }
+
+    bool done = false;
+    while (!done)
+    {
+        // 1. drive straight until not a valid move (hit occupied cell or at end of map)
+
+        bool hitWall = false;
+        while (!hitWall)
+        {
+            x2 += dx;
+            y2 += dy;
+            if (!validMove(x2, y2, nCols, nRows, grid, visited))
+            {
+                hitWall = true;
+                x2 = pathNodes.back().pos.x;
+                y2 = pathNodes.back().pos.y;
+                break;
+            }
+            if (!hitWall)
+            {
+                addNodeToList(x2, y2, pathNodes, visited);
+            }
+        }
+
+        // 2. check left and right after hitting wall, then change direction
+        if (robot_dir == north || robot_dir == south)
+        {
+            // if going north/south, then check if (now if it goes east/west is valid move, if it's not, then deadend)
+            if (!validMove(x2 + 1, y2, nCols, nRows, grid, visited) &&
+                !validMove(x2 - 1, y2, nCols, nRows, grid, visited))
+            {
+                // dead end, exit
+                done = true;
+                break;
+            }
+            else if (!validMove(x2 + 1, y2, nCols, nRows, grid, visited))
+            {
+                // east is occupied, travel towards west
+                x2--;
+                pattern_dir_ = west;
+            }
+            else if (!validMove(x2 - 1, y2, nCols, nRows, grid, visited))
+            {
+                // west is occupied, travel towards east
+                x2++;
+                pattern_dir_ = east;
+            }
+            else
+            {
+                // both sides are opened. If you don't have a preferred turn direction, travel towards most open
+                // direction
+                if (!(pattern_dir_ == east || pattern_dir_ == west))
+                {
+                    
+                    if (validMove(x2, y2 + 1, nCols, nRows, grid, visited))
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, north);
+                    }
+                    else
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, south);
+                    }
+                    ROS_INFO("rotation dir with most space successful");
+                }
+                // Get into this following state-> (blocked or visited. valid move) preferred turn direction ***->
+                // variable pattern direction***=> top if right here***-> pattern direction not East r West***-> ( if no
+                // preferred turn direction---> travel to most open)
+                if (pattern_dir_ = east)
+                {
+                    x2++;
+                }
+                else if (pattern_dir_ = west)
+                {
+                    x2--;
+                }
+            }
+
+            // add Node to List
+            addNodeToList(x2, y2, pathNodes, visited);
+
+            // change direction 180 deg (this is when after hit wall, increment by 1 node, then head backwards... this
+            // gets added to path list when the loop goes back up)
+            if (robot_dir == north)
+            {
+                robot_dir = south;
+                dy = -1;
+            }
+            else if (robot_dir == south)
+            {
+                robot_dir = north;
+                dy = 1;
+            }
+        }
+        else if (robot_dir == east || robot_dir == west)
+        {
+            if (!validMove(x2, y2 + 1, nCols, nRows, grid, visited) &&
+                !validMove(x2, y2 - 1, nCols, nRows, grid, visited))
+            {
+                // dead end, exit
+                done = true;
+                break;
+            }
+            else if (!validMove(x2, y2 + 1, nCols, nRows, grid, visited))
+            {
+                // north is occupied, travel towards south
+                y2--;
+                pattern_dir_ = south;
+            }
+            else if (!validMove(x2, y2 - 1, nCols, nRows, grid, visited))
+            {
+                // south is occupied, travel towards north
+                y2++;
+                pattern_dir_ = north;
+            }
+            else
+            {
+                // both sides are opened. If don't have a prefered turn direction, travel towards farthest edge
+                if (!(pattern_dir_ == north || pattern_dir_ == south))
+                {
+                    if (validMove(x2 + 1, y2, nCols, nRows, grid, visited))
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, east);
+                    }
+                    else
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, west);
+                    }
+                }
+                if (pattern_dir_ = north)
+                {
+                    y2++;
+                }
+                else if (pattern_dir_ = south)
+                {
+                    y2--;
+                }
+            }
+
+            // add Node to List
+            addNodeToList(x2, y2, pathNodes, visited);
+
+            // change direction 180 deg
+            if (robot_dir == east)
+            {
+                robot_dir = west;
+                dx = -1;
+            }
+            else if (robot_dir == west)
+            {
+                robot_dir = east;
+                dx = 1;
+            }
+        }
+    }
+    // Log
+    // printPathNodes(pathNodes);
+    return pathNodes;
+}
+
+
 std::list<gridNode_t> SpiralSTC::new_spiral(std::vector<std::vector<bool> > const& grid, std::list<gridNode_t>& init,
                                         std::vector<std::vector<bool> >& visited)
 {

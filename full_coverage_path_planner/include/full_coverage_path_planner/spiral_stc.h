@@ -83,6 +83,10 @@ public:
   static std::list<gridNode_t> boustrophedon(std::vector<std::vector<bool>> const& grid, std::list<gridNode_t>& init,
                                                std::vector<std::vector<bool>>& visited);
 
+  static std::list<gridNode_t> new_boustrophedon(std::vector<std::vector<bool>> const& grid,
+                                                      std::list<gridNode_t>& init,
+                                                      std::vector<std::vector<bool>>& visited);
+
   // ????????? Why is init a list?
     /**
      * Perform Boustrophedon-STC (Spanning Tree Coverage) coverage path planning.

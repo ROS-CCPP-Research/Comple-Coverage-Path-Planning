@@ -426,7 +426,8 @@ void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment
 void bfs(int x, int y,int sub_nRows, int sub_nCols,
           std::vector<std::vector<bool>> const& sub_grid, 
           std::vector<std::vector<bool>>& visited,
-          std::vector<std::vector<Node*>>& graph) {
+          std::vector<std::vector<Node*>>& graph,
+          Node* & root) {
 
 
     std::queue<std::pair<int, int>> q;
@@ -435,6 +436,7 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
 
     Node* startNode = new Node(x, y);
     graph[x][y] = startNode;
+    root = startNode;
 
     while (!q.empty()) {
         std::pair<int, int> curr = q.front();
@@ -459,10 +461,18 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
 
                 // Connect the new node to the current node
                 graph[currX][currY]->neighbors.push_back(newNode);
+
+                if (newX > currX && newY == currY) {
+                    graph[currX][currY]->left = newNode;
+                } else if (newX == currX && newY > currY) {
+                    graph[currX][currY]->right = newNode;
+                }
             }
         }
     }
 }
+
+
 
 void visualizeGraph(const std::vector<std::vector<Node*>>& graph) {
     std::ofstream dotFile("graph.dot");
@@ -499,7 +509,7 @@ void printGraph(const std::vector<std::vector<Node*>>& graph,int sub_nRows, int 
                 for (const auto& neighbor : graph[i][j]->neighbors) {
                     std::cout << "(" << neighbor->x << "," << neighbor->y << ") ";
                 }
-                // std::cout << std::endl;
+                std::cout << std::endl;
             }
         }
     }
@@ -610,4 +620,61 @@ std::vector<std::vector<bool>> create_explored_grid(std::vector<std::vector<bool
     }
     std::cout<<"free grid size : "<<explored_free_area_grid.size()<<std::endl;
     return explored_free_area_grid;
+}
+
+void preOrder(  Node* root, 
+                int depth, 
+                Node*& currentStart, 
+                std::vector<Node*>& current_root, 
+                std::vector<std::vector<Node*>>& narrow_area_points,
+                std::vector<std::vector<bool>>& narrow_area_grid_points,
+                std::vector<Node*>& temp_root
+            ){
+
+        if (root == nullptr) {
+                return;
+        }
+        for (int i = 0; i < depth; ++i) {
+        std::cout << "  ";
+        }
+
+        preOrder(root->left,depth+1,currentStart,current_root,narrow_area_points,narrow_area_grid_points,temp_root);
+
+        preOrder(root->right,depth+1,currentStart,current_root,narrow_area_points,narrow_area_grid_points,temp_root);
+
+        if(currentStart == nullptr){
+            currentStart = root;
+        }
+
+        if(root->left != nullptr){
+
+            current_root.push_back(root);
+
+            if(current_root.size() % 2 ==1 || current_root.size() <= 2){
+
+                if (!narrow_area_points.empty() &&
+                    (current_root.front()->y == narrow_area_points.back().front()->y ||
+                    current_root.back()->y == narrow_area_points.back().back()->y )
+                ) {
+
+                        narrow_area_points.back().insert(narrow_area_points.back().end(),
+                                      current_root.begin(), current_root.end());
+                }
+                else{
+                    narrow_area_points.push_back(current_root);
+                }
+
+                for(const auto point : current_root){
+                    narrow_area_grid_points[point->x][point->y] = false;
+                }
+                current_root.clear();
+            }
+        }
+        else if(root != nullptr){
+            
+            current_root.push_back(root);
+        }
+        
+        std::cout << "(" << root->x << "," << root->y << ")" << std::endl;
+
 }

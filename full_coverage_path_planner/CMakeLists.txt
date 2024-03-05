@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(full_coverage_path_planner)
 add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 find_package(catkin REQUIRED
         COMPONENTS
@@ -18,6 +21,7 @@ find_package(catkin REQUIRED
             std_msgs
             std_srvs
             tf2
+            OpenCV
         )
 
 include_directories(
@@ -25,6 +29,7 @@ include_directories(
     test/include
     ${catkin_INCLUDE_DIRS}
     )
+include_directories(${OpenCV_INCLUDE_DIRS})
 add_definitions(${EIGEN3_DEFINITIONS})
 
 catkin_package(
@@ -63,6 +68,10 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(path_planner src/main.cpp)
 target_link_libraries(path_planner ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
 add_dependencies(path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(test_path_planner src/test_plan.cpp)
+target_link_libraries(test_path_planner ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
+add_dependencies(test_path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(coverage_progress_visualizer_node src/coverage_progress_visualizer_node.cpp)
 target_link_libraries(coverage_progress_visualizer_node ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})

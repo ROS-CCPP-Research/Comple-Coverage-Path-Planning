@@ -9,6 +9,7 @@
 #include <sstream>
 #include <algorithm> 
 #include <cmath>
+#include <nav_msgs/OccupancyGrid.h>
 
 #ifndef FULL_COVERAGE_PATH_PLANNER_COMMON_H
 #define FULL_COVERAGE_PATH_PLANNER_COMMON_H
@@ -16,9 +17,11 @@
 struct Node {
     int x, y;
     std::vector<Node*> neighbors;
+    Node *up, *down, *left, *right; // Pointers to neighboring nodes
 
-    Node(int x, int y) : x(x), y(y) {}
+    Node(int x, int y) : x(x), y(y), up(nullptr), down(nullptr), left(nullptr), right(nullptr) {}
 };
+
 
 typedef struct
 {
@@ -189,7 +192,8 @@ void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment
                                int& explored_height, int& explored_width);
 
 
-void bfs(int x, int y,int sub_nRows, int sub_nCols,std::vector<std::vector<bool>> const& sub_grid, std::vector<std::vector<bool>>& visited,std::vector<std::vector<Node*>>& graph);
+void bfs(int x, int y,int sub_nRows, int sub_nCols,std::vector<std::vector<bool>> const& sub_grid, std::vector<std::vector<bool>>& visited,std::vector<std::vector<Node*>>& graph,Node* & root);
+
 
 void visualizeGraph(const std::vector<std::vector<Node*>>& graph);
 
@@ -202,5 +206,14 @@ void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& 
 std::list<std::vector<Point_t>> partition_free_area(const std::vector<Point_t>& boundary, int partition_count);
 
 std::vector<std::vector<bool>> create_explored_grid(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary);
+
+void preOrder(  Node* root, 
+                int depth, 
+                Node*& currentStart, 
+                std::vector<Node*>& current_root, 
+                std::vector<std::vector<Node*>>& narrow_area_points,
+                std::vector<std::vector<bool>>& narrow_area_grid_points,
+                std::vector<Node*>& temp_root
+            );
 
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

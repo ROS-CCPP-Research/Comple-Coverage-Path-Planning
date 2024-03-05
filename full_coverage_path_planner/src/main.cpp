@@ -101,11 +101,12 @@ int main(int argc, char** argv)
 
     std::vector<std::vector<bool>> explored_area_visited(nRows, std::vector<bool>(nCols, false));
     std::vector<std::vector<Node*>> explored_area_graph(nRows, std::vector<Node*>(nCols, nullptr));
+    Node* node = nullptr;
 
     for (int i = 0; i < nRows; ++i) {
         for (int j = 0; j < nCols; ++j) {
             if (grid[i][j] == 0 && !explored_area_visited[i][j]) {
-                bfs(i, j,nRows,nCols,explored_free_area_grid, explored_area_visited,explored_area_graph);
+                bfs(i, j,nRows,nCols,explored_free_area_grid, explored_area_visited,explored_area_graph,node);
             }
         }
     }
