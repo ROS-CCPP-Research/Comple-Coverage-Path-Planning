@@ -554,7 +554,7 @@ void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& 
         for (int j = 0; j < cols; ++j) {
             bool inside_boundary = false;
             for (const auto& point : boundary) {
-                if (point.x == i && point.y == j) {
+                if (point.y == i && point.x== j) {
                     inside_boundary = true;
                     break;
                 }
@@ -566,30 +566,15 @@ void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& 
 }
 
 // Function to partition the free area into smaller regions
-std::list<std::vector<Point_t>> partition_free_area(const std::vector<Point_t>& boundary, int partition_count) {
+std::list<std::vector<Point_t>> partition_free_area(std::list<Point_t>& boundary, int partition_count) {
     std::list<std::vector<Point_t>> partitions;
-    int total_points = boundary.size();
-    int points_per_partition = total_points / partition_count;
-    int remaining_points = total_points % partition_count;
+    std::vector<Point_t> sub;
 
-    auto boundary_itr = boundary.begin();
-    for (int i = 0; i < partition_count; ++i) {
-        std::vector<Point_t> current_partition;
-        int partition_size = points_per_partition + (i < remaining_points ? 1 : 0);
+    // for (const auto part : partitions){
+    //   sub.push_back(part.)
+    // }
+    
 
-        for (int j = 0; j < partition_size; ++j) {
-            // Skip points nearest to 1
-            while (boundary_itr != boundary.end() && distance(*boundary_itr, {0, 0}) < 1) {
-                ++boundary_itr;
-            }
-            if (boundary_itr != boundary.end()) {
-                current_partition.push_back(*boundary_itr);
-                ++boundary_itr;
-            }
-        }
-
-        partitions.push_back(current_partition);
-    }
 
     return partitions;
 }
@@ -603,6 +588,30 @@ void create_explored_grid(std::vector<std::vector<bool>> matrix, std::vector<Poi
             bool inside_boundary = false;
             for (const auto& point : boundary) {
                 if (point.x == i && point.y == j) {
+                    inside_boundary = true;
+                    break;
+                }
+            }
+            if(inside_boundary){
+              explored_free_area_grid[i][j] = false;
+            }
+            else{
+              explored_free_area_grid[i][j] = true;
+            }
+        
+        }
+    }
+}
+
+void create_explored_grid_node(std::vector<std::vector<bool>> matrix, std::vector<Node*> boundary,std::vector<std::vector<bool>>& explored_free_area_grid) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            bool inside_boundary = false;
+            for (const auto& point : boundary) {
+                if (point->x == i && point->y == j) {
                     inside_boundary = true;
                     break;
                 }
@@ -681,21 +690,30 @@ void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<
           return;
         } 
 
+        partition_point.push_back(node);
+
         if(partition_point.size()>=single_partitin_point_count){
           partitions.push_back(partition_point);
           partition_point.clear();
           partition_point.push_back(node);
         }
-        else{
-          partition_point.push_back(node);
-        }
 
         preOrderPartition(node->left,single_partitin_point_count,partitions,partition_point);
+
         preOrderPartition(node->right,single_partitin_point_count,partitions,partition_point);
 
+        
 
-
-        
-        
-        
     }
+
+size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph) {
+    size_t count = 0;
+    for (const auto& row : explored_area_graph) {
+        for (const auto* node : row) {
+            if (node != nullptr) {
+                ++count; // Count each non-null node
+            }
+        }
+    }
+    return count;
+}

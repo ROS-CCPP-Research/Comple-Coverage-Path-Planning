@@ -103,200 +103,288 @@ int main(int argc, char** argv)
 
     printGridBinary(explored_free_area_grid);
 
-    std::vector<std::vector<bool>> explored_area_visited(nRows, std::vector<bool>(nCols, false));
-    std::vector<std::vector<Node*>> explored_area_graph(nRows, std::vector<Node*>(nCols, nullptr));
-    Node* node = nullptr;
+    int multiple_pass_counter, visited_counter;
 
-    for (int i = 0; i < nRows; ++i) {
-        for (int j = 0; j < nCols; ++j) {
-            if (explored_free_area_grid[i][j] == 0 && !explored_area_visited[i][j]) {
-                bfs(i, j,nRows,nCols,explored_free_area_grid, explored_area_visited,explored_area_graph,node);
-            }
-        }
-    }
+    Point_t sub_Scaled;
 
-    int single_partitin_point_count = boundary.size()/robotCount;
+    sub_Scaled.x = boundary.front().y;
+    sub_Scaled.y = boundary.front().x;
 
-    std::cout<<"toral size : "<<boundary.size()<<std::endl;
-    std::cout<<"one size : "<<single_partitin_point_count<<std::endl;
+    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(explored_free_area_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
 
-    std::vector<std::vector<Node*>> partitions;
-    std::vector<Node*> partition_point;
 
-    preOrderPartition(node,single_partitin_point_count,partitions,partition_point);
+    int subpart_size = sub_path.size()/robotCount;
 
-    std::cout<<"par len : "<<partitions.size()<<std::endl;
+    // if(sub_path.size() % 2 == 1){
+    //     sub_path.
+    // }
+
+    std::cout<<"point len : "<<sub_path.size()<<std::endl;
+    std::cout<<"sub len : "<<subpart_size<<std::endl;
+
+    std::list<std::vector<Point_t>> all_partitions;
+    std::vector<Point_t> part;
 
     // printGraph(explored_area_graph,explored_area_visited.size(),explored_area_visited[0].size(),explored_area_visited);
 
+    for(const auto& parts : sub_path){
+        part.push_back(parts);
 
-    // std::list<std::vector<Point_t>> sub_regions = partition_free_area(boundary, robotCount);
+        if(part.size()>=subpart_size){
+            all_partitions.push_back(part);
+            part.clear();
+        }
+    }
 
-    // std::cout << "\nPartitioned Areas:\n";
-    // int partition_index = 1;
-    // for (std::vector<Point_t>& partition : sub_regions) {
-    //     std::cout << "Partition " << partition_index++ << ":\n";
-    //     print_matrix(grid,partition);
-    // }
-
-
-    int explored_width = grid.size();
-    int explored_height = grid[0].size();
-    std::list<std::vector<Point_t>> sub_regions = full_coverage_path_planner::SpiralSTC::explore_subregions(grid,explored_width,explored_height,robotCount);
-
-    std::cout<<"sub count"<<sub_regions.size()<<std::endl;
-
-    std::cout<<"------------------------------################################----------------------------------"<<std::endl;
-
-    std::vector<std::vector<bool>> sub_grid;
+    std::cout<<"partition count : "<<all_partitions.size()<<std::endl;
 
     std::list<Point_t> merged_path;
 
     std::vector<ros::Publisher> sub_waypointPublishers;
-    sub_waypointPublishers.reserve(sub_regions.size());
+    sub_waypointPublishers.reserve(all_partitions.size());
 
-    std::vector<nav_msgs::Path> sub_agentPaths(sub_regions.size());
+    std::vector<nav_msgs::Path> sub_agentPaths(all_partitions.size());
 
     size_t index = 0;
 
-    for (const auto& sub_region : sub_regions) {
+    for (std::vector<Point_t> single : all_partitions){
 
-        Point_t start_position = sub_region.front();
-        Point_t end_position = sub_region.back();
+        std::vector<std::vector<bool>> sub_region (nRows, std::vector<bool>(nCols, true)); 
 
-        // Extract sub-grid boundaries from sub_region points
-        int min_x = std::min_element(sub_region.begin(), sub_region.end())->x;
-        int max_x = std::max_element(sub_region.begin(), sub_region.end())->x;
-        int min_y = std::min_element(sub_region.begin(), sub_region.end())->y;
-        int max_y = std::max_element(sub_region.begin(), sub_region.end())->y;
+        for (int i = 0; i < nRows; ++i) {
+            for (int j = 0; j < nCols; ++j) {
+                bool inside_boundary = false;
+                for (const auto& point : single) {
+                    if (point.y == i && point.x== j) {
+                        inside_boundary = true;
+                        break;
+                    }
+                }
+                if(inside_boundary){
+                    sub_region[i][j] = false;
+                }
+                
+            }
+        }
+        std::cout<<"sub start point : "<<"("<<single.front().x<<","<<single.front().y<<")"<<std::endl;
+        printGridBinary(sub_region);
+
+        Point_t sub_region_Scaled;
+        int multiple_pass_counter, visited_counter;
+
+        sub_region_Scaled.x = single.front().x;
+        sub_region_Scaled.y = single.front().y;
+        std::list<Point_t> sub_region_path;
+
+        if(index % 2 ==1){
+
+            sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        }
+        else{
+            sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        }
+
+        planner.sub_paths_array.push_back(sub_region_path);
+
+        std::vector<PoseStamped> sub_plan;
+        sub_plan.reserve(sub_region_path.size());
+        planner.parsePointlist2Plan(pose, sub_region_path, sub_plan);
+
+        std::stringstream ss;
+        ss << robotNamespace << "_" << index << "/waypoints";
+        sub_waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
+
+        sub_agentPaths[index].header.frame_id = "map";
+        sub_agentPaths[index].header.stamp = ros::Time::now();
+        sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin());
+
+        for (const auto& pose : sub_plan)
+        {
+            sub_agentPaths[index].poses.push_back(pose);
+        }
+
+        sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+
+        // merged_path.insert(merged_path.end(), sub_region_path.begin(),sub_region_path.end());
+        if (!merged_path.empty()) {
+            auto it = merged_path.end();
+            --it; // Move iterator to the last element
+            merged_path.insert(it, sub_region_path.begin(), sub_region_path.end());
+        } else {
+            // If merged_path is empty, just insert at the beginning
+            merged_path.insert(merged_path.begin(), sub_region_path.begin(), sub_region_path.end());
+        }
 
 
-    std::cout << "Start position of sub-region according to main grid: (" << start_position.x << "," << start_position.y <<")" << std::endl;
-    std::cout << "End position of sub-region according to main grid: (" << end_position.x << "," << end_position.y <<")" << std::endl;
-    
+        for (const auto& pose : sub_plan)
+        {
+            sub_agentPaths[index].poses.push_back(pose);
+        }
 
-    // Copy relevant portion from the main grid
-    sub_grid.clear();
-    for (int y = min_y; y <= max_y; ++y) {
-        sub_grid.push_back(std::vector<bool>(grid[y].begin() + min_x, grid[y].begin() + max_x + 1));
+        sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+
+        ++index;
+        // break;
+
     }
 
-    PoseStamped sub_Pose;  // This is the point from which path planning starts
+    // int explored_width = grid.size();
+    // int explored_height = grid[0].size();
+    // std::list<std::vector<Point_t>> sub_regions = full_coverage_path_planner::SpiralSTC::explore_subregions(grid,explored_width,explored_height,robotCount);
 
-    sub_Pose.pose.position.x = start_position.x - min_x;
-    sub_Pose.pose.position.y = start_position.y - min_y;
-    sub_Pose.pose.position.z = 0.0; // Assuming z-coordinate is 0
-    sub_Pose.pose.orientation.x = 0.0; // Assuming orientation x,y,z,w are all 0
-    sub_Pose.pose.orientation.y = 0.0;
-    sub_Pose.pose.orientation.z = 0.0;
-    sub_Pose.pose.orientation.w = 1.0; // Assuming orientation w is 1 for no rotation
-    sub_Pose.header.frame_id = "map"; // Assuming the frame is "map"
+    // std::cout<<"sub count"<<sub_regions.size()<<std::endl;
+
+    // std::cout<<"------------------------------################################----------------------------------"<<std::endl;
+
+    // std::vector<std::vector<bool>> sub_grid;
+
+    // std::list<Point_t> merged_path;
+
+    // std::vector<ros::Publisher> sub_waypointPublishers;
+    // sub_waypointPublishers.reserve(sub_regions.size());
+
+    // std::vector<nav_msgs::Path> sub_agentPaths(sub_regions.size());
+
+    // size_t index = 0;
+
+    // for (const auto& sub_region : sub_regions) {
+
+    //     Point_t start_position = sub_region.front();
+    //     Point_t end_position = sub_region.back();
+
+    //     // Extract sub-grid boundaries from sub_region points
+    //     int min_x = std::min_element(sub_region.begin(), sub_region.end())->x;
+    //     int max_x = std::max_element(sub_region.begin(), sub_region.end())->x;
+    //     int min_y = std::min_element(sub_region.begin(), sub_region.end())->y;
+    //     int max_y = std::max_element(sub_region.begin(), sub_region.end())->y;
 
 
-    std::cout<<"start position of sub grid : "<<sub_Pose.pose.position<<std::endl;
-    std::cout<<"sub grid value start position : "<<sub_grid[sub_Pose.pose.position.x][sub_Pose.pose.position.y]<<std::endl;
-
-
-    Point_t sub_Scaled;
-    fPoint_t sub_grid_origin_;
+    // std::cout << "Start position of sub-region according to main grid: (" << start_position.x << "," << start_position.y <<")" << std::endl;
+    // std::cout << "End position of sub-region according to main grid: (" << end_position.x << "," << end_position.y <<")" << std::endl;
     
-    sub_grid_origin_.x = 0.0;  // x-sub-grid-origin in meters (occ_grid.info.origin.position.x)
-    sub_grid_origin_.y = 0.0;  // y-sub-grid-origin in meters (occ_grid.info.origin.position.y)
 
-    sub_Scaled.x = static_cast<unsigned int>(clamp(sub_Pose.pose.position.x / planner.tile_size_, 0.0,
-                             floor(sub_grid.size() / planner.tile_size_)));
-    sub_Scaled.y = static_cast<unsigned int>(clamp(sub_Pose.pose.position.y / planner.tile_size_, 0.0,
-                             floor(sub_grid[0].size() / planner.tile_size_)));
-
-
-    
-    std::cout<< "sub_Scaled point"<<sub_Scaled<<std::endl;
-
-    int sub_nRows = sub_grid.size();
-    int sub_nCols = sub_grid[0].size();
-
-    std::vector<std::vector<bool>> sub_visited(sub_nRows, std::vector<bool>(sub_nCols, false));
-    std::vector<std::vector<Node*>> graph(sub_nRows, std::vector<Node*>(sub_nCols, nullptr));
-
-    // for (int i = 0; i < sub_nRows; ++i) {
-    //     for (int j = 0; j < sub_nCols; ++j) {
-    //         if (grid[i][j] == 0 && !sub_visited[i][j]) {
-    //             bfs(i, j,sub_nRows,sub_nCols,sub_grid, sub_visited,graph);
-    //         }
-    //     }
+    // // Copy relevant portion from the main grid
+    // sub_grid.clear();
+    // for (int y = min_y; y <= max_y; ++y) {
+    //     sub_grid.push_back(std::vector<bool>(grid[y].begin() + min_x, grid[y].begin() + max_x + 1));
     // }
-    // printGraph(graph,sub_visited.size(),sub_visited[0].size(),sub_visited);
-    // visualizeGraph(graph);
+
+    // PoseStamped sub_Pose;  // This is the point from which path planning starts
+
+    // sub_Pose.pose.position.x = start_position.x - min_x;
+    // sub_Pose.pose.position.y = start_position.y - min_y;
+    // sub_Pose.pose.position.z = 0.0; // Assuming z-coordinate is 0
+    // sub_Pose.pose.orientation.x = 0.0; // Assuming orientation x,y,z,w are all 0
+    // sub_Pose.pose.orientation.y = 0.0;
+    // sub_Pose.pose.orientation.z = 0.0;
+    // sub_Pose.pose.orientation.w = 1.0; // Assuming orientation w is 1 for no rotation
+    // sub_Pose.header.frame_id = "map"; // Assuming the frame is "map"
 
 
-    int multiple_pass_counter, visited_counter;
+    // std::cout<<"start position of sub grid : "<<sub_Pose.pose.position<<std::endl;
+    // std::cout<<"sub grid value start position : "<<sub_grid[sub_Pose.pose.position.x][sub_Pose.pose.position.y]<<std::endl;
 
-    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter);
+
+    // Point_t sub_Scaled;
+    // fPoint_t sub_grid_origin_;
     
-    // std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
+    // sub_grid_origin_.x = 0.0;  // x-sub-grid-origin in meters (occ_grid.info.origin.position.x)
+    // sub_grid_origin_.y = 0.0;  // y-sub-grid-origin in meters (occ_grid.info.origin.position.y)
+
+    // sub_Scaled.x = static_cast<unsigned int>(clamp(sub_Pose.pose.position.x / planner.tile_size_, 0.0,
+    //                          floor(sub_grid.size() / planner.tile_size_)));
+    // sub_Scaled.y = static_cast<unsigned int>(clamp(sub_Pose.pose.position.y / planner.tile_size_, 0.0,
+    //                          floor(sub_grid[0].size() / planner.tile_size_)));
+
+
     
-    std::cout<<"Lenght : "<<sub_path.size()<<std::endl;
+    // std::cout<< "sub_Scaled point"<<sub_Scaled<<std::endl;
 
-    std::cout<< "sub grid start path before offset : "<<sub_path.front()<<std::endl;
-    std::cout<< "sub grid end path before offset : "<<sub_path.back()<<std::endl;
+    // int sub_nRows = sub_grid.size();
+    // int sub_nCols = sub_grid[0].size();
 
-    std::cout << "Sub-path coordinates before offset:" << std::endl;
-    for (const auto& point : sub_path) {
-        std::cout << "(" << point.x << ", " << point.y << ")";
-    }
-    std::cout<<std::endl;
+    // std::vector<std::vector<bool>> sub_visited(sub_nRows, std::vector<bool>(sub_nCols, false));
+    // std::vector<std::vector<Node*>> graph(sub_nRows, std::vector<Node*>(sub_nCols, nullptr));
 
-    std::cout<<"##############################################################################################"<<std::endl;
+    // // for (int i = 0; i < sub_nRows; ++i) {
+    // //     for (int j = 0; j < sub_nCols; ++j) {
+    // //         if (grid[i][j] == 0 && !sub_visited[i][j]) {
+    // //             bfs(i, j,sub_nRows,sub_nCols,sub_grid, sub_visited,graph);
+    // //         }
+    // //     }
+    // // }
+    // // printGraph(graph,sub_visited.size(),sub_visited[0].size(),sub_visited);
+    // // visualizeGraph(graph);
 
-    for (auto& point : sub_path) {
-        point.x += min_x; // Adjust x-coordinate by the minimum x-coordinate of the sub-grid
-        point.y += min_y; // Adjust y-coordinate by the minimum y-coordinate of the sub-grid
-    }
+
+    // int multiple_pass_counter, visited_counter;
+
+    // std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter);
     
-    std::cout<<"Sub path start after offset : "<<sub_path.front()<<std::endl;
-    std::cout<<"Sub path end after offset : "<<sub_path.back()<<std::endl;
+    // // std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
+    
+    // std::cout<<"Lenght : "<<sub_path.size()<<std::endl;
 
-    std::cout << "Sub-path coordinates after offset:" << std::endl;
-    for (const auto& point : sub_path) {
-        std::cout << "(" << point.x << ", " << point.y << ")";
-    }
-    std::cout<<std::endl;
+    // std::cout<< "sub grid start path before offset : "<<sub_path.front()<<std::endl;
+    // std::cout<< "sub grid end path before offset : "<<sub_path.back()<<std::endl;
 
-    printGridBinary(sub_grid);
+    // std::cout << "Sub-path coordinates before offset:" << std::endl;
+    // for (const auto& point : sub_path) {
+    //     std::cout << "(" << point.x << ", " << point.y << ")";
+    // }
+    // std::cout<<std::endl;
 
-    std::cout<<"-------------"<<std::endl;
+    // std::cout<<"##############################################################################################"<<std::endl;
 
-    planner.sub_paths_array.push_back(sub_path);
+    // for (auto& point : sub_path) {
+    //     point.x += min_x; // Adjust x-coordinate by the minimum x-coordinate of the sub-grid
+    //     point.y += min_y; // Adjust y-coordinate by the minimum y-coordinate of the sub-grid
+    // }
+    
+    // std::cout<<"Sub path start after offset : "<<sub_path.front()<<std::endl;
+    // std::cout<<"Sub path end after offset : "<<sub_path.back()<<std::endl;
 
-    std::vector<PoseStamped> sub_plan;
-    sub_plan.reserve(sub_path.size());
-    planner.parsePointlist2Plan(pose, sub_path, sub_plan);
+    // std::cout << "Sub-path coordinates after offset:" << std::endl;
+    // for (const auto& point : sub_path) {
+    //     std::cout << "(" << point.x << ", " << point.y << ")";
+    // }
+    // std::cout<<std::endl;
 
-    std::stringstream ss;
-    ss << robotNamespace << "_" << index << "/waypoints";
-    sub_waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
+    // printGridBinary(sub_grid);
 
-    sub_agentPaths[index].header.frame_id = "map";
-    sub_agentPaths[index].header.stamp = ros::Time::now();
-    sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin());
+    // std::cout<<"-------------"<<std::endl;
 
-    for (const auto& pose : sub_plan)
-    {
-        sub_agentPaths[index].poses.push_back(pose);
-    }
+    // planner.sub_paths_array.push_back(sub_path);
 
-    sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+    // std::vector<PoseStamped> sub_plan;
+    // sub_plan.reserve(sub_path.size());
+    // planner.parsePointlist2Plan(pose, sub_path, sub_plan);
 
-    merged_path.splice(merged_path.end(), sub_path);
+    // std::stringstream ss;
+    // ss << robotNamespace << "_" << index << "/waypoints";
+    // sub_waypointPublishers.push_back(nh.advertise<nav_msgs::Path>(ss.str(), 100, true));
 
-    // Convert sub-path points back to original grid coordinates
-    // ... adjust path points based on sub-region origin
+    // sub_agentPaths[index].header.frame_id = "map";
+    // sub_agentPaths[index].header.stamp = ros::Time::now();
+    // sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin());
 
-    // Store the sub-path in a data structure (e.g., list or vector)
-    // ... (replace placeholder)
-    ++index;
-    break;
-    }
+    // for (const auto& pose : sub_plan)
+    // {
+    //     sub_agentPaths[index].poses.push_back(pose);
+    // }
+
+    // sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+
+    // merged_path.splice(merged_path.end(), sub_path);
+
+    // // Convert sub-path points back to original grid coordinates
+    // // ... adjust path points based on sub-region origin
+
+    // // Store the sub-path in a data structure (e.g., list or vector)
+    // // ... (replace placeholder)
+    // ++index;
+    // break;
+    // }
     
     
     // Boustrophedon path planning

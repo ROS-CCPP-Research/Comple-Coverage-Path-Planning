@@ -219,4 +219,8 @@ void preOrder(  Node* root,
             );
 
 void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<std::vector<Node*>>& partitions,std::vector<Node*>& partition_point);
+
+size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph);
+
+void create_explored_grid_node(std::vector<std::vector<bool>> matrix, std::vector<Node*> boundary,std::vector<std::vector<bool>>& explored_free_area_grid);
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

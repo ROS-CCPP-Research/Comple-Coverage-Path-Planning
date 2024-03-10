@@ -365,6 +365,8 @@ int main(int argc, char** argv)
         }
     }
 
+    std::cout<<"test graph size : "<<test_area_graph.size()<<std::endl;
+
     if (root != nullptr) {
         int max_row_count = max_row - root->x;
         preOrderTraversalHorizontal(root,narrow_area_points_vertical,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
