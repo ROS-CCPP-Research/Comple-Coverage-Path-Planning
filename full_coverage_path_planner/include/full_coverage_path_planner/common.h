@@ -19,10 +19,12 @@ struct Node {
     std::vector<Node*> neighbors;
     Node *left;
     Node *right;
+    Node* back;
+    Node* up;
+    Node* down;
 
     Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr) {}
 };
-
 
 typedef struct
 {
@@ -195,7 +197,6 @@ void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment
 
 void bfs(int x, int y,int sub_nRows, int sub_nCols,std::vector<std::vector<bool>> const& sub_grid, std::vector<std::vector<bool>>& visited,std::vector<std::vector<Node*>>& graph,Node* & root);
 
-
 void visualizeGraph(const std::vector<std::vector<Node*>>& graph);
 
 void printGraph(const std::vector<std::vector<Node*>>& graph, int sub_nRows, int sub_nCols, std::vector<std::vector<bool>> const& sub_grid);
@@ -206,7 +207,7 @@ void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& 
 
 std::list<std::vector<Point_t>> partition_free_area(const std::vector<Point_t>& boundary, int partition_count);
 
-std::vector<std::vector<bool>> create_explored_grid(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary);
+void create_explored_grid(std::vector<std::vector<bool>> matrix, std::vector<Point_t> boundary,std::vector<std::vector<bool>>& explored_free_area_grid);
 
 void preOrder(  Node* root, 
                 int depth, 
@@ -217,4 +218,5 @@ void preOrder(  Node* root,
                 std::vector<Node*>& temp_root
             );
 
+void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<std::vector<Node*>>& partitions,std::vector<Node*>& partition_point);
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

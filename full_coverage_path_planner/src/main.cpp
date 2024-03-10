@@ -80,24 +80,28 @@ int main(int argc, char** argv)
     // Convert occupancy grid to binary matrix
     planner.parseGrid(*occ, grid, robotRadius, tool_radius, pose, scaled);
 
-    std::cout<<"scalled x : "<<scaled.x<<","<<"scalled y  : "<<scaled.y<<std::endl;
+    // std::cout<<"scalled x : "<<scaled.x<<","<<"scalled y  : "<<scaled.y<<std::endl;
 
-    printGridBinary(grid);
+    // printGridBinary(grid);
+
+    int nRows = grid.size();
+    int nCols = grid[0].size();
 
     std::cout<<"robotCount"<<robotCount<<std::endl;
 
     std::vector<std::vector<bool>> free_visited(grid.size(), std::vector<bool>(grid[0].size(), false));
 
-    // List to store the boundary points of the free area
     std::vector<Point_t> boundary;
 
-    explore_free_area(grid, scaled.x, scaled.y, free_visited, boundary);   
- 
+    explore_free_area(grid, scaled.x, scaled.y, free_visited, boundary);  
 
-    std::vector<std::vector<bool>> explored_free_area_grid = create_explored_grid(grid,boundary);
+    std::vector<std::vector<bool>> explored_free_area_grid (nRows, std::vector<bool>(nCols, false));  
 
-    int nRows = explored_free_area_grid.size();
-    int nCols = explored_free_area_grid[0].size();
+    create_explored_grid(grid,boundary,explored_free_area_grid);
+
+    std::cout<<"start point : "<<boundary.front()<<std::endl;
+
+    printGridBinary(explored_free_area_grid);
 
     std::vector<std::vector<bool>> explored_area_visited(nRows, std::vector<bool>(nCols, false));
     std::vector<std::vector<Node*>> explored_area_graph(nRows, std::vector<Node*>(nCols, nullptr));
@@ -105,17 +109,25 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < nRows; ++i) {
         for (int j = 0; j < nCols; ++j) {
-            if (grid[i][j] == 0 && !explored_area_visited[i][j]) {
+            if (explored_free_area_grid[i][j] == 0 && !explored_area_visited[i][j]) {
                 bfs(i, j,nRows,nCols,explored_free_area_grid, explored_area_visited,explored_area_graph,node);
             }
         }
     }
 
-    // printGridBinary(explored_free_area_grid);
-        
-    
-    print_matrix(grid,boundary);
+    int single_partitin_point_count = boundary.size()/robotCount;
 
+    std::cout<<"toral size : "<<boundary.size()<<std::endl;
+    std::cout<<"one size : "<<single_partitin_point_count<<std::endl;
+
+    std::vector<std::vector<Node*>> partitions;
+    std::vector<Node*> partition_point;
+
+    preOrderPartition(node,single_partitin_point_count,partitions,partition_point);
+
+    std::cout<<"par len : "<<partitions.size()<<std::endl;
+
+    // printGraph(explored_area_graph,explored_area_visited.size(),explored_area_visited[0].size(),explored_area_visited);
 
 
     // std::list<std::vector<Point_t>> sub_regions = partition_free_area(boundary, robotCount);

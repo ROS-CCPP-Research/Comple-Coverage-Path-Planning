@@ -473,7 +473,6 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
 }
 
 
-
 void visualizeGraph(const std::vector<std::vector<Node*>>& graph) {
     std::ofstream dotFile("graph.dot");
     dotFile << "graph {\n";
@@ -595,11 +594,9 @@ std::list<std::vector<Point_t>> partition_free_area(const std::vector<Point_t>& 
     return partitions;
 }
 
-std::vector<std::vector<bool>> create_explored_grid(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary) {
+void create_explored_grid(std::vector<std::vector<bool>> matrix, std::vector<Point_t> boundary,std::vector<std::vector<bool>>& explored_free_area_grid) {
     int rows = matrix.size();
     int cols = matrix[0].size();
-
-    std::vector<std::vector<bool>> explored_free_area_grid;
     
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
@@ -607,19 +604,18 @@ std::vector<std::vector<bool>> create_explored_grid(std::vector<std::vector<bool
             for (const auto& point : boundary) {
                 if (point.x == i && point.y == j) {
                     inside_boundary = true;
-                    explored_free_area_grid[i][j] =  0;
                     break;
                 }
-                else{
-                  explored_free_area_grid[i][j] = 1;
-                  break;
-                }
             }
-        }
+            if(inside_boundary){
+              explored_free_area_grid[i][j] = false;
+            }
+            else{
+              explored_free_area_grid[i][j] = true;
+            }
         
+        }
     }
-    std::cout<<"free grid size : "<<explored_free_area_grid.size()<<std::endl;
-    return explored_free_area_grid;
 }
 
 void preOrder(  Node* root, 
@@ -678,3 +674,28 @@ void preOrder(  Node* root,
         std::cout << "(" << root->x << "," << root->y << ")" << std::endl;
 
 }
+
+void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<std::vector<Node*>>& partitions, std::vector<Node*>& partition_point){
+
+        if(!node){
+          return;
+        } 
+
+        if(partition_point.size()>=single_partitin_point_count){
+          partitions.push_back(partition_point);
+          partition_point.clear();
+          partition_point.push_back(node);
+        }
+        else{
+          partition_point.push_back(node);
+        }
+
+        preOrderPartition(node->left,single_partitin_point_count,partitions,partition_point);
+        preOrderPartition(node->right,single_partitin_point_count,partitions,partition_point);
+
+
+
+        
+        
+        
+    }

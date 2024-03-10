@@ -15,6 +15,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
+#include <queue>
 
 
 void create_test_occupancy_grid(nav_msgs::OccupancyGrid& occupancyGridMsg,ros::Publisher occupancyGridPub){
@@ -102,6 +103,183 @@ void preOrder(Node* root, int depth, Node*& currentStart, std::vector<Node*>& cu
 
 
 
+void addRowNodes(const std::vector<std::vector<bool>>& matrix, int row, Node*& rowStart, Node*& prevRowStart, int& max_row) {
+    Node* current = nullptr;
+    for (int col = 0; col < matrix[row].size(); ++col) {
+        if (matrix[row][col] == 0) {
+
+            if(max_row<col) max_row = col;
+
+            if (!current) {
+
+                current = new Node(row, col);
+
+                if (!rowStart) rowStart = current; // Mark start of the row
+                
+                if (prevRowStart) {
+                    prevRowStart->right = current; // Link from previous row start to current start
+                    prevRowStart = nullptr; // Disconnect prevRowStart as it's now linked
+                }
+            } else {
+                current->left = new Node(row, col); // Link to the next node in the row
+                current = current->left;
+            }
+        }
+    }
+}
+
+Node* createBinaryTreeFromMatrix(const std::vector<std::vector<bool>>& matrix, int& max_row) {
+    Node* root = nullptr;
+    Node* prevRowStart = nullptr;
+    for (int row = 0; row < matrix.size(); ++row) {
+        Node* rowStart = nullptr;
+        addRowNodes(matrix, row, rowStart, prevRowStart,max_row);
+        if (!root) root = rowStart; // First non-null rowStart is the root
+        prevRowStart = rowStart;
+    }
+    return root;
+}
+
+void addColumnNodes(const std::vector<std::vector<bool>>& matrix, int col, Node*& colStart, Node*& prevColStart, int& max_col) {
+    Node* current = nullptr;
+    for (int row = 0; row < matrix.size(); ++row) {
+        if (matrix[row][col] == 0) { // Free area found
+            if(max_col<row) max_col=row;
+            if (!current) {
+                current = new Node(row, col);
+                if (!colStart) colStart = current; // Mark start of the column
+                
+                if (prevColStart) {
+                    prevColStart->right = current; // Link from previous column start to current start
+                    while (prevColStart->left) { // Find the next linkable node in the previous column
+                        prevColStart = prevColStart->left;
+                    }
+                    prevColStart = nullptr; // Reset for next column
+                }
+            } else {
+                current->left = new Node(row, col); // Link to the next node in the column
+                current = current->left;
+            }
+        }
+    }
+}
+
+Node* createColumnWiseBinaryTreeFromMatrix(const std::vector<std::vector<bool>>& matrix, int& max_col) {
+    Node* root = nullptr;
+    Node* prevColStart = nullptr;
+    for (int col = 0; col < matrix[0].size(); ++col) {
+        Node* colStart = nullptr;
+        addColumnNodes(matrix, col, colStart, prevColStart,max_col);
+        if (!root) root = colStart; // First non-null colStart is the root
+        if (!prevColStart) prevColStart = colStart; // Keep track of the start of the previous column
+    }
+    return root;
+}
+
+void preOrderTraversal(Node* node, std::vector<std::vector<Node*>>& narrow_area_points, 
+                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+                        Node*& current_col,
+                        std::vector<Node*>& current_root,
+                        int max_col_count,
+                        std::vector<Node*>& temp_odd_root,
+                        int& col_count
+                        ) {
+    if (!node) return;
+
+    if(current_col->y !=  node->y && current_col->x+1 != node->x){
+        std::cout<<"new col"<<std::endl;
+        std::cout<<"col size : "<<current_root.size()+1<<std::endl;
+        if(current_root.size()+1 %2 != 0 && current_root.size()<max_col_count/2){
+            temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
+            col_count++;
+            current_root.clear();
+        }
+        else{
+            std::cout<<temp_odd_root.size();
+            if(col_count>=3){
+                narrow_area_points.push_back(temp_odd_root);
+                for (const auto& node_ptr : temp_odd_root) {
+                    narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
+                }
+                temp_odd_root.clear();
+                col_count = 0;
+            }
+            else{
+                temp_odd_root.clear();
+                col_count = 0;
+            }
+        }
+    }
+    else{
+        current_root.push_back(node);
+    }
+
+    std::cout << "(" << node->x << ", " << node->y << ") ";
+    current_col = node;
+    
+    preOrderTraversal(node->left,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_col_count,temp_odd_root,col_count);
+    
+    
+    preOrderTraversal(node->right,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_col_count,temp_odd_root,col_count);
+}
+
+void preOrderTraversalHorizontal(Node* node, std::vector<std::vector<Node*>>& narrow_area_points, 
+                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+                        Node*& current_col,
+                        std::vector<Node*>& current_root,
+                        int max_row_count,
+                        std::vector<Node*>& temp_odd_root,
+                        int& col_count
+                        ) {
+    if (!node) return;
+    
+    preOrderTraversalHorizontal(node->left,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+    
+    
+    preOrderTraversalHorizontal(node->right,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+
+    if(current_col == nullptr){
+        current_col = node;
+    }
+
+    if(current_col->x !=  node->x){
+        std::cout<<"new col"<<std::endl;
+        std::cout<<"col size : "<<current_root.size()<<std::endl;
+        if(current_root.size() %2 != 0 && current_root.size()<=max_row_count/2){
+
+            temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
+            col_count++;
+            current_root.clear();
+            current_root.push_back(node);
+
+        }
+        else{
+            std::cout<<temp_odd_root.size();
+            if(col_count>=3){
+                narrow_area_points.push_back(temp_odd_root);
+                for (const auto& node_ptr : temp_odd_root) {
+                    narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
+                }
+                temp_odd_root.clear();
+                col_count = 0;
+                current_root.clear();
+                current_root.push_back(node);
+            }
+            else{
+                temp_odd_root.clear();
+                col_count = 0;
+                current_root.clear();
+                current_root.push_back(node);
+            }
+        }
+    }
+    else{
+        current_root.push_back(node);
+    }
+    std::cout << "(" << node->x << ", " << node->y << ") ";
+    current_col = node;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -122,16 +300,58 @@ int main(int argc, char** argv)
         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-        {1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-        {1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-        {1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
+        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
 
-
     int nRows = test_matrix.size();
     int nCols = test_matrix[0].size();
+
+    int max_row = 0;
+    int max_col = 0;
+
+    std::vector<std::vector<Node*>> narrow_area_points_vertical;
+    std::vector<std::vector<Node*>> narrow_area_points_horizontal;
+    std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
+
+    Node* current_col = nullptr;
+    // Node* currentStart = nullptr;
+    // int root_lenghts = 0;
+    std::vector<Node*> current_root;
+    std::vector<Node*> temp_odd_root;
+    int col_count = 0;
+
+    Node* root_row = createBinaryTreeFromMatrix(test_matrix,max_row);
+    // std::cout << "Pre-Order Traversal of Binary Tree Created from Matrix:" << std::endl;
+    // std::cout<<"Max length of row : "<<max_row - root_row->y<<std::endl;
+
+    // if (root_row != nullptr) {
+    //     preOrderTraversal(root_row,narrow_area_points_vertical,narrow_area_grid_points);
+    // }
+    // else {
+    //     std::cout << "No row root node found." << std::endl;
+    // }
+    
+
+    // std::cout<<std::endl;
+    // std::cout<<std::endl;
+
+    // Node* root_col = createColumnWiseBinaryTreeFromMatrix(test_matrix,max_col);
+    // std::cout << "Pre-Order Traversal of Column-wise Binary Tree Created from Matrix:" << std::endl;
+    // std::cout<<"Max length of col : "<<max_col - root_col->x<<std::endl;
+
+    // if (root_col != nullptr) {
+    //     current_col = root_col;
+    //     int max_col_count = max_col - root_col->x;
+    //     preOrderTraversal(root_col,narrow_area_points_vertical,narrow_area_grid_points,current_col,current_root,max_col_count,temp_odd_root,col_count);
+    // }
+    // else {
+    //     std::cout << "No column root node found." << std::endl;
+    // }
+
 
     std::vector<std::vector<bool>> test_area_visited(nRows, std::vector<bool>(nCols, false));
     std::vector<std::vector<Node*>> test_area_graph(nRows, std::vector<Node*>(nCols, nullptr));
@@ -145,7 +365,18 @@ int main(int argc, char** argv)
         }
     }
 
-    printGraph(test_area_graph,test_area_visited.size(),test_area_visited[0].size(),test_area_visited);
+    if (root != nullptr) {
+        int max_row_count = max_row - root->x;
+        preOrderTraversalHorizontal(root,narrow_area_points_vertical,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+    }
+    else {
+        std::cout << "No column root node found." << std::endl;
+    }
+
+    // preOrderTraversal(root,narrow_area_points_horizontal,narrow_area_grid_points);
+
+    
+    // printGraph(test_area_graph_row,test_area_visited_row.size(),test_area_visited_row[0].size(),test_area_visited_row);
 
     // ----------------------------------------------------------------------------------------------------------------------
     
@@ -168,17 +399,17 @@ int main(int argc, char** argv)
 
     // std::cout<<"Size of narrow_area_points  : "<<narrow_area_points.size()<<std::endl;
 
-    // for (size_t i = 0; i < narrow_area_points.size(); ++i) {
-    //     std::cout << "List " << i << ":" << std::endl;
-    //     for (const auto node_ptr : narrow_area_points[i]) {
-    //         std::cout << "(" << node_ptr->x << ", " << node_ptr->y << ") ";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (size_t i = 0; i < narrow_area_points_vertical.size(); ++i) {
+        std::cout << "List " << i << ":" << std::endl;
+        for (const auto node_ptr : narrow_area_points_vertical[i]) {
+            std::cout << "(" << node_ptr->x << ", " << node_ptr->y << ") ";
+        }
+        std::cout << std::endl;
+    }
 
-    // printGridBinary(narrow_area_grid_points);
+    printGridBinary(narrow_area_grid_points);
 
 
-    ros::spin();
-    return EXIT_SUCCESS;
+    // ros::spin();
+    // return EXIT_SUCCESS;
 }
