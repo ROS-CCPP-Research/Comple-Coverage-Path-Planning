@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="full_coverage_path_planner" name="test_path_planner" type="test_path_planner" clear_params="true" output="screen">
+
+    </node>
+
+</launch>

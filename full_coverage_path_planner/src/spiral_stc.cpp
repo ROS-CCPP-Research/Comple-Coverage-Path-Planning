@@ -51,29 +51,6 @@ void SpiralSTC::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_r
   }
 }
 
-std::list<std::vector<Point_t>> SpiralSTC::boustrophedon_subregions(const std::vector<std::vector<bool>>& environment,
-                                                         int sub_width, int sub_height) {
-
-  std::list<std::vector<Point_t>> sub_regions;
-
-  // Iterate through the environment grid, starting from the top-left corner
-  for (int y = 0; y < environment.size(); y += sub_height) {
-    for (int x = 0; x < environment[0].size(); x += sub_width) {
-      // Create a new sub-region with appropriate boundaries
-      std::vector<Point_t> sub_region = {
-        {x, y},  // Top-left corner
-        {std::min(static_cast<unsigned long> (x + sub_width), environment[0].size() - 1), y},  // Top-right corner
-        {std::min(static_cast<unsigned long> (x + sub_width), environment[0].size() - 1), 
-          std::min(static_cast<unsigned long> (y + sub_height), environment.size() - 1)}, // Bottom-right corner
-        {x, std::min(static_cast<unsigned long> (y + sub_height), environment.size() - 1)}  // Bottom-left corner
-      };
-      sub_regions.push_back(sub_region);
-    }
-  }
-
-  return sub_regions;
-}
-
 
 std::list<std::vector<Point_t>> SpiralSTC::explore_subregions(const std::vector<std::vector<bool>>& environment,
                                                                int explored_width, int explored_height,
@@ -613,6 +590,398 @@ std::list<Point_t> SpiralSTC::spiral_stc(std::vector<std::vector<bool> > const& 
 
     // Spiral fill from current position
     pathNodes = spiral(grid, pathNodes, visited);
+
+#ifdef DEBUG_PLOT
+    ROS_INFO("Visited grid updated after spiral:");
+    printGrid(grid, visited, pathNodes, SpiralStart, pathNodes.back());
+#endif
+
+    goals = map_2_goals(visited, eNodeOpen);  // Retrieve remaining goalpoints
+
+    for (it = pathNodes.begin(); it != pathNodes.end(); ++it)
+    {
+      Point_t newPoint = { it->pos.x, it->pos.y };
+      visited_counter++;
+      fullPath.push_back(newPoint);
+    }
+  }
+
+  return fullPath;
+}
+
+std::list<gridNode_t> SpiralSTC::new_boustrophedon(std::vector<std::vector<bool>> const& grid,
+                                                      std::list<gridNode_t>& init,
+                                                      std::vector<std::vector<bool>>& visited)
+
+///
+// std::list<gridNode_t> BoustrophedonSTC::boustrophedon(std::vector<std::vector<bool> > const& grid,
+// std::list<gridNode_t>& init, std::vector<std::vector<bool> >& visited, /*/GLOBAL VAR (VERT/HORIZONTAL)/*/)
+{
+    int dx, dy, x2, y2, i, nRows = grid.size(), nCols = grid[0].size();
+    // Mountain pattern filling of the open space
+    // Copy incoming list to 'end'
+    std::list<gridNode_t> pathNodes(init);
+    // Set starting pos
+    x2 = pathNodes.back().pos.x;
+    y2 = pathNodes.back().pos.y;
+    // set initial direction based on space visible from initial pos
+    /*/  IF GLOBAL VAR = 0*/
+
+    int robot_dir = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, point);
+    /*  GLOBAL VAR++*/
+    /*/   if global var ==1 /*/
+    // int robot_dir =
+
+    // set dx and dy based on robot_dir
+    switch (robot_dir)
+    {
+    case east:  // 1
+        dx = +1;
+        dy = 0;
+        break;
+    case west:  // 2
+        dx = -1;
+        dy = 0;
+        break;
+    case north:  // 3
+        dx = 0;
+        dy = +1;
+        break;
+    case south:  // 4
+        dx = 0;
+        dy = -1;
+        break;
+    default:
+        ROS_ERROR(
+            "Full Coverage Path Planner: NO INITIAL ROBOT DIRECTION CALCULATED. "
+            "This is a logic error that must be fixed by editing spiral_stc.cpp. Will travel east for now.");
+        robot_dir = east;
+        dx = +1;
+        dy = 0;
+        break;
+    }
+
+    bool done = false;
+    while (!done)
+    {
+        // 1. drive straight until not a valid move (hit occupied cell or at end of map)
+
+        bool hitWall = false;
+        while (!hitWall)
+        {
+            x2 += dx;
+            y2 += dy;
+            if (!validMove(x2, y2, nCols, nRows, grid, visited))
+            {
+                hitWall = true;
+                x2 = pathNodes.back().pos.x;
+                y2 = pathNodes.back().pos.y;
+                break;
+            }
+            if (!hitWall)
+            {
+                addNodeToList(x2, y2, pathNodes, visited);
+            }
+        }
+
+        // 2. check left and right after hitting wall, then change direction
+        if (robot_dir == north || robot_dir == south)
+        {
+            // if going north/south, then check if (now if it goes east/west is valid move, if it's not, then deadend)
+            if (!validMove(x2 + 1, y2, nCols, nRows, grid, visited) &&
+                !validMove(x2 - 1, y2, nCols, nRows, grid, visited))
+            {
+                // dead end, exit
+                done = true;
+                break;
+            }
+            else if (!validMove(x2 + 1, y2, nCols, nRows, grid, visited))
+            {
+                // east is occupied, travel towards west
+                x2--;
+                pattern_dir_ = west;
+            }
+            else if (!validMove(x2 - 1, y2, nCols, nRows, grid, visited))
+            {
+                // west is occupied, travel towards east
+                x2++;
+                pattern_dir_ = east;
+            }
+            else
+            {
+                // both sides are opened. If you don't have a preferred turn direction, travel towards most open
+                // direction
+                if (!(pattern_dir_ == east || pattern_dir_ == west))
+                {
+                    
+                    if (validMove(x2, y2 + 1, nCols, nRows, grid, visited))
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, north);
+                    }
+                    else
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, south);
+                    }
+                    ROS_INFO("rotation dir with most space successful");
+                }
+                // Get into this following state-> (blocked or visited. valid move) preferred turn direction ***->
+                // variable pattern direction***=> top if right here***-> pattern direction not East r West***-> ( if no
+                // preferred turn direction---> travel to most open)
+                if (pattern_dir_ = east)
+                {
+                    x2++;
+                }
+                else if (pattern_dir_ = west)
+                {
+                    x2--;
+                }
+            }
+
+            // add Node to List
+            addNodeToList(x2, y2, pathNodes, visited);
+
+            // change direction 180 deg (this is when after hit wall, increment by 1 node, then head backwards... this
+            // gets added to path list when the loop goes back up)
+            if (robot_dir == north)
+            {
+                robot_dir = south;
+                dy = -1;
+            }
+            else if (robot_dir == south)
+            {
+                robot_dir = north;
+                dy = 1;
+            }
+        }
+        else if (robot_dir == east || robot_dir == west)
+        {
+            if (!validMove(x2, y2 + 1, nCols, nRows, grid, visited) &&
+                !validMove(x2, y2 - 1, nCols, nRows, grid, visited))
+            {
+                // dead end, exit
+                done = true;
+                break;
+            }
+            else if (!validMove(x2, y2 + 1, nCols, nRows, grid, visited))
+            {
+                // north is occupied, travel towards south
+                y2--;
+                pattern_dir_ = south;
+            }
+            else if (!validMove(x2, y2 - 1, nCols, nRows, grid, visited))
+            {
+                // south is occupied, travel towards north
+                y2++;
+                pattern_dir_ = north;
+            }
+            else
+            {
+                // both sides are opened. If don't have a prefered turn direction, travel towards farthest edge
+                if (!(pattern_dir_ == north || pattern_dir_ == south))
+                {
+                    if (validMove(x2 + 1, y2, nCols, nRows, grid, visited))
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, east);
+                    }
+                    else
+                    {
+                        pattern_dir_ = dirWithMostSpace(x2, y2, nCols, nRows, grid, visited, west);
+                    }
+                }
+                if (pattern_dir_ = north)
+                {
+                    y2++;
+                }
+                else if (pattern_dir_ = south)
+                {
+                    y2--;
+                }
+            }
+
+            // add Node to List
+            addNodeToList(x2, y2, pathNodes, visited);
+
+            // change direction 180 deg
+            if (robot_dir == east)
+            {
+                robot_dir = west;
+                dx = -1;
+            }
+            else if (robot_dir == west)
+            {
+                robot_dir = east;
+                dx = 1;
+            }
+        }
+    }
+    // Log
+    // printPathNodes(pathNodes);
+    return pathNodes;
+}
+
+
+std::list<gridNode_t> SpiralSTC::new_spiral(std::vector<std::vector<bool> > const& grid, std::list<gridNode_t>& init,
+                                        std::vector<std::vector<bool> >& visited)
+{
+  int dx, dy, dx_prev, x2, y2, i, nRows = grid.size(), nCols = grid[0].size();
+
+  // Spiral filling of the open space
+  // Copy incoming list to 'end'
+  std::list<gridNode_t> pathNodes(init);
+
+  // Create iterator for gridNode_t list and let it point to the last element of end
+  std::list<gridNode_t>::iterator it = --(pathNodes.end());
+
+  if (pathNodes.size() > 1)  // if list is length 1, keep iterator at end
+    it--;                    // Let iterator point to second to last element
+
+  gridNode_t prev = *(it);
+  
+  bool done = false;
+  while (!done)
+  {
+    if (it != pathNodes.begin())
+    {
+      // turn ccw
+      dx = pathNodes.back().pos.x - prev.pos.x;
+      dy = pathNodes.back().pos.y - prev.pos.y;
+      dx_prev = dx;
+      dx = -dy;
+      dy = dx_prev;
+    }
+    else
+    {
+      // Initialize spiral direction towards y-axis
+      dx = 0;
+      dy = 1;
+    }
+    done = true;
+
+    for (int i = 0; i < 4; ++i)
+    {
+      x2 = pathNodes.back().pos.x + dx;
+      y2 = pathNodes.back().pos.y + dy;
+      if (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)
+      {
+        if (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen)
+        {
+          Point_t new_point = { x2, y2 };
+          gridNode_t new_node =
+          {
+            new_point,  // Point: x,y
+            0,          // Cost
+            0,          // Heuristic
+          };
+          prev = pathNodes.back();
+          pathNodes.push_back(new_node);
+          it = --(pathNodes.end());
+          visited[y2][x2] = eNodeVisited;  // Close node
+          done = false;
+          break;
+        }
+      }
+      // try next direction cw
+      dx_prev = dx;
+      dx = dy;
+      dy = -dx_prev;
+
+      
+    }
+  }
+  return pathNodes;
+}
+
+
+std::list<Point_t> SpiralSTC::new_spiral_stc(std::vector<std::vector<bool> > const& grid,
+                                          Point_t& init,
+                                          int &multiple_pass_counter,
+                                          int &visited_counter)
+{
+  int x, y, nRows = grid.size(), nCols = grid[0].size();
+  // Initial node is initially set as visited so it does not count
+  multiple_pass_counter = 0;
+  visited_counter = 0;
+
+  std::vector<std::vector<bool> > visited;
+  visited = grid;  // Copy grid matrix
+  x = init.x;
+  y = init.y;
+
+  Point_t new_point = { x, y };
+  gridNode_t new_node =
+  {
+    new_point,  // Point: x,y
+    0,          // Cost
+    0,          // Heuristic
+  };
+  std::list<gridNode_t> pathNodes;
+  std::list<Point_t> fullPath;
+  pathNodes.push_back(new_node);
+  visited[y][x] = eNodeVisited;
+
+#ifdef DEBUG_PLOT
+  ROS_INFO("Grid before walking is: ");
+  printGrid(grid, visited, fullPath);
+#endif
+
+  pathNodes = SpiralSTC::new_spiral(grid, pathNodes, visited);                // First spiral fill
+  std::list<Point_t> goals = map_2_goals(visited, eNodeOpen);  // Retrieve remaining goalpoints
+  // Add points to full path
+  std::list<gridNode_t>::iterator it;
+  for (it = pathNodes.begin(); it != pathNodes.end(); ++it)
+  {
+    Point_t newPoint = { it->pos.x, it->pos.y };
+    visited_counter++;
+    fullPath.push_back(newPoint);
+  }
+  // Remove all elements from pathNodes list except last element
+  pathNodes.erase(pathNodes.begin(), --(pathNodes.end()));
+
+#ifdef DEBUG_PLOT
+  ROS_INFO("Current grid after first spiral is");
+  printGrid(grid, visited, fullPath);
+  ROS_INFO("There are %d goals remaining", goals.size());
+#endif
+  while (goals.size() != 0)
+  {
+    // Remove all elements from pathNodes list except last element.
+    // The last point is the starting point for a new search and A* extends the path from there on
+    pathNodes.erase(pathNodes.begin(), --(pathNodes.end()));
+    visited_counter--;  // First point is already counted as visited
+    // Plan to closest open Node using A*
+    // `goals` is essentially the map, so we use `goals` to determine the distance from the end of a potential path
+    //    to the nearest free space
+    bool resign = a_star_to_open_space(grid, pathNodes.back(), 1, visited, goals, pathNodes);
+    if (resign)
+    {
+#ifdef DEBUG_PLOT
+      ROS_INFO("A_star_to_open_space is resigning", goals.size());
+#endif
+      break;
+    }
+
+    // Update visited grid
+    for (it = pathNodes.begin(); it != pathNodes.end(); ++it)
+    {
+      if (visited[it->pos.y][it->pos.x])
+      {
+        multiple_pass_counter++;
+      }
+      visited[it->pos.y][it->pos.x] = eNodeVisited;
+    }
+    if (pathNodes.size() > 0)
+    {
+      multiple_pass_counter--;  // First point is already counted as visited
+    }
+
+#ifdef DEBUG_PLOT
+    ROS_INFO("Grid with path marked as visited is:");
+    gridNode_t SpiralStart = pathNodes.back();
+    printGrid(grid, visited, pathNodes, pathNodes.front(), pathNodes.back());
+#endif
+
+    // Spiral fill from current position
+    pathNodes = new_spiral(grid, pathNodes, visited);
 
 #ifdef DEBUG_PLOT
     ROS_INFO("Visited grid updated after spiral:");
