@@ -2,9 +2,29 @@
 #include <fstream>
 #include <list>
 #include <vector>
+#include <iostream>
+#include <queue>
+#include <utility>
+#include <unordered_set>
+#include <sstream>
+#include <algorithm> 
+#include <cmath>
+#include <nav_msgs/OccupancyGrid.h>
 
 #ifndef FULL_COVERAGE_PATH_PLANNER_COMMON_H
 #define FULL_COVERAGE_PATH_PLANNER_COMMON_H
+
+struct Node {
+    int x, y;
+    std::vector<Node*> neighbors;
+    Node *left;
+    Node *right;
+    Node* back;
+    Node* up;
+    Node* down;
+
+    Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr) {}
+};
 
 typedef struct
 {
@@ -70,6 +90,16 @@ enum
     north = 3,
     south = 4
 };
+
+static double distance(const Point_t& p1, const Point_t& p2) {
+    return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
+}
+
+// Custom comparison function to sort points based on their distance from the origin (0, 0)
+static bool comparePoints(const Point_t& p1, const Point_t& p2) {
+    Point_t origin = {0, 0};
+    return distance(p1, origin) < distance(p2, origin);
+}
 
 /**
  * Find the distance from poi to the closest point in goals
@@ -164,4 +194,33 @@ int dirWithMostSpace(int x2, int y2, int nCols, int nRows, std::vector<std::vect
 void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment,
                                int& explored_height, int& explored_width);
 
+
+void bfs(int x, int y,int sub_nRows, int sub_nCols,std::vector<std::vector<bool>> const& sub_grid, std::vector<std::vector<bool>>& visited,std::vector<std::vector<Node*>>& graph,Node* & root);
+
+void visualizeGraph(const std::vector<std::vector<Node*>>& graph);
+
+void printGraph(const std::vector<std::vector<Node*>>& graph, int sub_nRows, int sub_nCols, std::vector<std::vector<bool>> const& sub_grid);
+
+void explore_free_area(std::vector<std::vector<bool>>& matrix, int start_x, int start_y, std::vector<std::vector<bool>>& visited, std::vector<Point_t>& boundary);
+
+void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary);
+
+std::list<std::vector<Point_t>> partition_free_area(const std::vector<Point_t>& boundary, int partition_count);
+
+void create_explored_grid(std::vector<std::vector<bool>> matrix, std::vector<Point_t> boundary,std::vector<std::vector<bool>>& explored_free_area_grid);
+
+void preOrder(  Node* root, 
+                int depth, 
+                Node*& currentStart, 
+                std::vector<Node*>& current_root, 
+                std::vector<std::vector<Node*>>& narrow_area_points,
+                std::vector<std::vector<bool>>& narrow_area_grid_points,
+                std::vector<Node*>& temp_root
+            );
+
+void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<std::vector<Node*>>& partitions,std::vector<Node*>& partition_point);
+
+size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph);
+
+void create_explored_grid_node(std::vector<std::vector<bool>> matrix, std::vector<Node*> boundary,std::vector<std::vector<bool>>& explored_free_area_grid);
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

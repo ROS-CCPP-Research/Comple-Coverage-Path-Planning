@@ -49,6 +49,7 @@ enum
   eDirDown = -2,
 };
 
+
 namespace full_coverage_path_planner
 {
 class FullCoveragePathPlanner
@@ -114,6 +115,8 @@ public:
   costmap_2d::Costmap2DROS* costmap_ros_;
   costmap_2d::Costmap2D* costmap_;
   std::vector<std::list<Point_t>> sub_paths_array;
+
+
   
   struct spiral_cpp_metrics_type
   {
