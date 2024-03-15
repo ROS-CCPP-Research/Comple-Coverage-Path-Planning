@@ -448,6 +448,7 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
         // std::cout << "(" << currX << ", " << currY << "),";
 
         // Explore neighbors
+        int index = 0;
         for (const auto& dir : bfs_directions) {
             int newX = currX + dir.first;
             int newY = currY + dir.second;
@@ -461,6 +462,23 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
 
                 // Connect the new node to the current node
                 graph[currX][currY]->neighbors.push_back(newNode);
+
+                if(index==0){
+                  root->up = newNode;
+                  newNode->down = root;
+                }
+                else if(index == 1){
+                  root->left = newNode;
+                  newNode->up = root;
+
+                }
+                else if(index == 2){
+                  root->back = newNode;
+                }
+                else{
+                  root->right = newNode;
+                  newNode->back = root;
+                }
 
                 if (newX > currX && newY == currY) {
                     graph[currX][currY]->left = newNode;
