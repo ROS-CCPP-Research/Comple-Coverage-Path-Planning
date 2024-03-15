@@ -12,6 +12,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roslint</build_depend>
   <build_depend>rostest</build_depend>
+  <build_depend>message_generation</build_depend>
   <depend>base_local_planner</depend>
   <depend>costmap_2d</depend>
   <depend>pluginlib</depend>
@@ -33,6 +34,7 @@
   <test_depend>cv_bridge</test_depend>
   <test_depend>rosunit</test_depend>
   <test_depend>tracking_pid</test_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <nav_core plugin="${prefix}/fcpp_plugin.xml"/>

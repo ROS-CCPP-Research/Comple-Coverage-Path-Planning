@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(full_coverage_path_planner)
 add_compile_options(-std=c++11)
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 
 find_package(catkin REQUIRED
         COMPONENTS
@@ -22,15 +19,15 @@ find_package(catkin REQUIRED
             std_srvs
             tf2
             OpenCV
+            message_generation
         )
 
-include_directories(
-    include
-    test/include
-    ${catkin_INCLUDE_DIRS}
-    )
-include_directories(${OpenCV_INCLUDE_DIRS})
-add_definitions(${EIGEN3_DEFINITIONS})
+add_message_files(
+  FILES
+  MapPartition.msg
+  RobotBid.msg
+)
+
 
 catkin_package(
     INCLUDE_DIRS include
@@ -48,11 +45,17 @@ catkin_package(
         std_srvs
         tf2
         tf
+        message_runtime
 )
 
+include_directories(
+    include
+    test/include
+    ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+)
 
-roslint_cpp()
-roslint_python()
+add_definitions(${EIGEN3_DEFINITIONS})
 
 add_library(${PROJECT_NAME}
         src/common.cpp
@@ -60,6 +63,7 @@ add_library(${PROJECT_NAME}
         src/spiral_stc.cpp
         src/main.cpp
         )
+
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
@@ -76,6 +80,11 @@ add_dependencies(test_path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 add_executable(coverage_progress_visualizer_node src/coverage_progress_visualizer_node.cpp)
 target_link_libraries(coverage_progress_visualizer_node ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
 add_dependencies(coverage_progress_visualizer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(task_allocator src/task_allocator.cpp)
+add_dependencies(task_allocator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(task_allocator ${catkin_LIBRARIES})
+
 
 install(TARGETS
             ${PROJECT_NAME}
