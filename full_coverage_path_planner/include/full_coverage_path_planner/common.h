@@ -23,7 +23,7 @@ struct Node {
     Node* up;
     Node* down;
 
-    Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr) {}
+    Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr),back(nullptr),up(nullptr) ,down(nullptr){}
 };
 
 typedef struct
