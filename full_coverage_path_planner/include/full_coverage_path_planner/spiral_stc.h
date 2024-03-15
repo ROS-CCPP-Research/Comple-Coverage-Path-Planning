@@ -83,10 +83,6 @@ public:
   static std::list<gridNode_t> boustrophedon(std::vector<std::vector<bool>> const& grid, std::list<gridNode_t>& init,
                                                std::vector<std::vector<bool>>& visited);
 
-  static std::list<gridNode_t> new_boustrophedon(std::vector<std::vector<bool>> const& grid,
-                                                      std::list<gridNode_t>& init,
-                                                      std::vector<std::vector<bool>>& visited);
-
   // ????????? Why is init a list?
     /**
      * Perform Boustrophedon-STC (Spanning Tree Coverage) coverage path planning.
@@ -109,6 +105,15 @@ public:
   */
   static std::list<std::vector<Point_t>> explore_subregions(const std::vector<std::vector<bool>>& environment,
                                                                int sub_width, int sub_height,int sub_area_count);
+
+  static bool is_narrow_area(std::vector<std::vector<bool>> const &grid, Point_t pos);
+
+  static void move_boustrophedon_left_to_right(std::vector<std::vector<bool>> const &grid,
+                                                 std::list<gridNode_t> &pathNodes,
+                                                 std::vector<std::vector<bool>> &visited);
+  static void move_boustrophedon_right_to_left(std::vector<std::vector<bool>> const &grid,
+                                                 std::list<gridNode_t> &pathNodes,
+                                                 std::vector<std::vector<bool>> &visited);
 
 
 private:
