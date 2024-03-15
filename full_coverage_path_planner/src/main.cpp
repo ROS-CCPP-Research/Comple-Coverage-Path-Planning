@@ -176,13 +176,9 @@ int main(int argc, char** argv)
         sub_region_Scaled.y = single.front().y;
         std::list<Point_t> sub_region_path;
 
-        if(index % 2 ==1){
+        sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
 
-            sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
-        }
-        else{
-            sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
-        }
+        // sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
 
         planner.sub_paths_array.push_back(sub_region_path);
 

@@ -281,6 +281,16 @@ void preOrderTraversalHorizontal(Node* node, std::vector<std::vector<Node*>>& na
 }
 
 
+void preOrderTrave(Node* root){
+
+    if(!root) return;
+
+    std::cout << "(" << root->x << ", " << root->y << ") ";
+    preOrderTrave(root->left);
+    preOrderTrave(root->right);
+
+}
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "test_plan");
@@ -300,10 +310,10 @@ int main(int argc, char** argv)
         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
-        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
-        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
-        {1, 1, 0, 0, 0, 1, 1, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+        {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
 
@@ -355,6 +365,7 @@ int main(int argc, char** argv)
 
     std::vector<std::vector<bool>> test_area_visited(nRows, std::vector<bool>(nCols, false));
     std::vector<std::vector<Node*>> test_area_graph(nRows, std::vector<Node*>(nCols, nullptr));
+
     Node* root = nullptr;
 
     for (int i = 0; i < nRows; ++i) {
@@ -365,6 +376,7 @@ int main(int argc, char** argv)
         }
     }
 
+
     std::cout<<"test graph size : "<<test_area_graph.size()<<std::endl;
 
     if (root != nullptr) {
@@ -374,6 +386,8 @@ int main(int argc, char** argv)
     else {
         std::cout << "No column root node found." << std::endl;
     }
+
+    preOrderTrave(root);
 
     // preOrderTraversal(root,narrow_area_points_horizontal,narrow_area_grid_points);
 
@@ -399,17 +413,17 @@ int main(int argc, char** argv)
     //     std::cout << "No root node found." << std::endl;
     // }
 
-    // std::cout<<"Size of narrow_area_points  : "<<narrow_area_points.size()<<std::endl;
+    // std::cout<<"Size of narrow_area_points  : "<<narrow_area_points_vertical.size()<<std::endl;
 
-    for (size_t i = 0; i < narrow_area_points_vertical.size(); ++i) {
-        std::cout << "List " << i << ":" << std::endl;
-        for (const auto node_ptr : narrow_area_points_vertical[i]) {
-            std::cout << "(" << node_ptr->x << ", " << node_ptr->y << ") ";
-        }
-        std::cout << std::endl;
-    }
+    // for (size_t i = 0; i < narrow_area_points_vertical.size(); ++i) {
+    //     std::cout << "List " << i << ":" << std::endl;
+    //     for (const auto node_ptr : narrow_area_points_vertical[i]) {
+    //         std::cout << "(" << node_ptr->x << ", " << node_ptr->y << ") ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    printGridBinary(narrow_area_grid_points);
+    // printGridBinary(narrow_area_grid_points);
 
 
     // ros::spin();
