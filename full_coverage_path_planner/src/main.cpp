@@ -12,6 +12,16 @@
 
 using PoseStamped = geometry_msgs::PoseStamped;
 
+int countFreeCells(const std::vector<std::vector<bool>>& grid) {
+    int freeCells = 0;
+    for (const auto& row : grid) {
+        for (bool cell : row) {
+            if (!cell) freeCells++;
+        }
+    }
+    return freeCells;
+}
+
 int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::vector<bool>>& visited, std::vector<std::vector<bool>>& subGrid, int i, int j, int& remaining) {
     if (i < 0 || i >= grid.size() || j < 0 || j >= grid[0].size() || visited[i][j] || grid[i][j] || remaining <= 0) {
         return 0;
@@ -33,39 +43,50 @@ int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::v
 std::vector<std::vector<std::vector<bool>>> partitionGrid(const std::vector<std::vector<bool>>& grid, int noOfRobots) {
     int totalFreeCells = grid.size() * grid[0].size(); // Assuming you count this correctly elsewhere
     int freeCellsForRobot = totalFreeCells / noOfRobots;
+    int startRow = 0, startCol = 0;
+     int freeCellsAllocated = 0;
     
     std::vector<std::vector<std::vector<bool>>> partitions(noOfRobots, std::vector<std::vector<bool>>(grid.size(), std::vector<bool>(grid[0].size(), true)));
     std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
     
+    
     int robot = 0;
+     bool found = false;
     for (int i = 0; i < grid.size() && robot < noOfRobots; ++i) {
+        int subGridFreeCellCount = totalFreeCells;
         for (int j = 0; j < grid[0].size() && robot < noOfRobots; ++j) {
-            if (!visited[i][j] && !grid[i][j]) {
-                int remaining = freeCellsForRobot;
-                floodFillUtil(grid, visited, partitions[robot], i, j, remaining);
-                robot++; // Move to the next robot after filling the cells
-            }
+                if (!grid[i][j] && !visited[i][j]) { // If the cell is free and not visited
+                    int filled = floodFillUtil(grid, visited,  partitions[robot], i, j,freeCellsForRobot);
+                    freeCellsAllocated += filled;
+                    subGridFreeCellCount -= filled;
+                    if (!found) {
+                        found = true;
+                        // Update the start position for the next sub-grid
+                        startRow = i;
+                        startCol = j + 1;
+                        if (startCol >= grid[0].size()) {
+                            startRow++;
+                            startCol = 0;
+                        }
+                    }
+                }
         }
     }
     
     return partitions;
 }
-
 // int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::vector<bool>>& visited, std::vector<std::vector<bool>>& sub_grid, int i, int j, int& remaining) {
 //     if (i < 0 || i >= grid.size() || j < 0 || j >= grid[0].size() || visited[i][j] || grid[i][j] || remaining <= 0) {
 //         return 0;
 //     }
-
 //     visited[i][j] = true;
 //     sub_grid[i][j] = false; // Mark this cell as free in the sub-grid
 //     remaining--;
-
 //     int filled = 1;
 //     filled += floodFillUtil(grid, visited, sub_grid, i + 1, j, remaining);
 //     filled += floodFillUtil(grid, visited, sub_grid, i - 1, j, remaining);
 //     filled += floodFillUtil(grid, visited, sub_grid, i, j + 1, remaining);
 //     filled += floodFillUtil(grid, visited, sub_grid, i, j - 1, remaining);
-
 //     return filled;
 // }
 
@@ -117,7 +138,6 @@ std::vector<std::vector<std::vector<bool>>> floodFill(const std::vector<std::vec
 
     return sub_grids; // Return all sub-grids
 }
-
 
 void printSubGrids(const std::vector<std::vector<std::vector<bool>>>& sub_grids) {
     for (size_t robot = 0; robot < sub_grids.size(); ++robot) {
@@ -226,9 +246,9 @@ int main(int argc, char** argv)
 
      std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
 
-    int numOfRobots =2;
+    int numOfRobots = 2;
 
-    auto sub_grids = floodFill(explored_free_area_grid, numOfRobots);
+    // auto sub_grids = floodFill(explored_free_area_grid, numOfRobots);
     auto partitions = partitionGrid(explored_free_area_grid, numOfRobots);
     printSubGrids(partitions);
 
