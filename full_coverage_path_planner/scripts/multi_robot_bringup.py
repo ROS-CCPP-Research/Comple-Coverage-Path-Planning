@@ -24,10 +24,12 @@ src = "coverage.launch"
 robot_namespace = rospy.get_param("~robot_namespace", "robot")
 
 for robot_id in range(n_agents):
+    
     path_topic = f"{robot_namespace}_{robot_id}/waypoints"
     start = (
-        cast(Path, rospy.wait_for_message(path_topic, Path)).poses[0].pose
+        cast(Path, rospy.wait_for_message(path_topic, Path)).poses[2].pose
     )  # type: Pose
+
     cli_args = [
         pkg,
         src,
@@ -36,6 +38,12 @@ for robot_id in range(n_agents):
         f"y_pos:={start.position.y}",
         f"yaw:={0.0}",
     ]
+
+    print("Start : ---------------------------------------------------------------------------------")
+    print(robot_id)
+    print(start.position.x)
+    print(start.position.y)
+
     roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(cli_args)[0]
     roslaunch_args = cli_args[2:]
     launch_files.append((roslaunch_file, roslaunch_args))

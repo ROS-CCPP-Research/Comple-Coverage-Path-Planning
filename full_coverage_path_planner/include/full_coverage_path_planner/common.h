@@ -179,6 +179,14 @@ std::list<Point_t> map_2_goals(std::vector<std::vector<bool> > const& grid, bool
 bool validMove(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
                std::vector<std::vector<bool>> const& visited);
 
+bool inValidMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited,
+               std::vector<std::vector<bool>> narrow_area_grid_points);
+
+bool validMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited,
+               std::vector<std::vector<bool>> narrow_area_grid_points);
+
 /**
  * Adds node in (x2, y2) into the list of pathNodes, and marks the node as visited
  */
@@ -196,6 +204,12 @@ void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment
 
 
 void bfs(int x, int y,int sub_nRows, int sub_nCols,std::vector<std::vector<bool>> const& sub_grid, std::vector<std::vector<bool>>& visited,std::vector<std::vector<Node*>>& graph,Node* & root);
+
+void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
+          std::vector<std::vector<bool>> const& sub_grid, 
+          std::vector<std::vector<bool>>& visited,
+          std::vector<std::vector<Node*>>& graph,
+          Node* & root);
 
 void visualizeGraph(const std::vector<std::vector<Node*>>& graph);
 

@@ -1,7 +1,7 @@
 <launch>
     <node pkg="full_coverage_path_planner" name="path_planner" type="path_planner" clear_params="true" output="screen">
-        <param name="robot_radius" value="0.25"/>
-        <param name="tool_radius" value="0.25"/>
+        <param name="robot_radius" value="0.4"/>
+        <param name="tool_radius" value="0.4"/>
         <param name="sub_width" value="20"/>
         <param name="sub_height" value="20"/>
 <!--            Path planning will start from here. Input: x, y, z, roll, pitch, yaw (in map frame)-->
