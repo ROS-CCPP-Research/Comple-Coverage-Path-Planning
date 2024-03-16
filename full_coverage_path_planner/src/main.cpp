@@ -317,15 +317,62 @@ int main(int argc, char** argv)
         std::list<Point_t> sub_region_path;
         std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
 
-        sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points);
+        // sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points);
 
-        // sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
 
         planner.sub_paths_array.push_back(sub_region_path);
 
+        std::cout<<"Index : "<<index<<std::endl;
+
+        std::cout<<"scalled point ("<<sub_region_Scaled.x<<", "<<sub_region_Scaled.y<<")"<<std::endl;
+
+        std::cout<<"sub plan first point ("<<sub_region_path.front().x<<", "<<sub_region_path.front().y<<")"<<std::endl;
+
+        std::cout<<"sub plan end point ("<<sub_region_path.back().x<<", "<<sub_region_path.back().y<<")"<<std::endl;
+
+
         std::vector<PoseStamped> sub_plan;
         sub_plan.reserve(sub_region_path.size());
+
+        double x = sub_region_Scaled.x; // Example value
+        double y = sub_region_Scaled.y; // Example value
+        double z = 0.0; // Example value
+        double roll = 0.0; // Example value
+        double pitch = 0.0; // Example value
+        double yaw = 0.0; // Example value
+
+        // Construct the start_pose string using the variables
+        std::ostringstream oss;
+        oss << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw;
+        std::string start_pose = oss.str(); 
+
+        {
+            std::stringstream ss(start_pose);
+            ss >> pose.pose.position.x >> pose.pose.position.y >> pose.pose.position.z;
+            double roll, pitch, yaw;
+            ss >> roll >> pitch >> yaw;
+            tf2::Quaternion q;
+            q.setRPY(roll, pitch, yaw);
+            pose.header.frame_id = "map";
+            pose.pose.orientation.x = q.x();
+            pose.pose.orientation.y = q.y();
+            pose.pose.orientation.z = q.z();
+            pose.pose.orientation.w = q.w();
+        }
+
         planner.parsePointlist2Plan(pose, sub_region_path, sub_plan);
+
+        std::cout<<"sub post stamped start point ("<<sub_plan.front().pose.position.x<<", "<<sub_plan.front().pose.position.y<<")"<<std::endl;
+
+        std::cout<<"sub post stamped end point ("<<sub_plan.back().pose.position.x<<", "<<sub_plan.back().pose.position.y<<")"<<std::endl;
+
+        for (const auto& pose : sub_plan)
+        {
+            std::cout<<"("<<pose.pose.position.x<<", "<<pose.pose.position.y<<") ";
+        }
+
+        std::cout<<"-----------------------------------------------------------------------------------------------------"<<std::endl;
 
         std::stringstream ss;
         ss << robotNamespace << "_" << index << "/waypoints";
@@ -360,8 +407,11 @@ int main(int argc, char** argv)
 
         sub_waypointPublishers[index].publish(sub_agentPaths[index]);
 
+        sub_plan.clear();
+        sub_region_path.clear();
+
         ++index;
-        // break;
+        
 
     }
 
