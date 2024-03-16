@@ -26,7 +26,7 @@ robot_namespace = rospy.get_param("~robot_namespace", "robot")
 for robot_id in range(n_agents):
     path_topic = f"{robot_namespace}_{robot_id}/waypoints"
     start = (
-        cast(Path, rospy.wait_for_message(path_topic, Path)).poses[0].pose
+        cast(Path, rospy.wait_for_message(path_topic, Path)).poses[2].pose
     )  # type: Pose
     cli_args = [
         pkg,
