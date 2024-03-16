@@ -41,40 +41,27 @@ int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::v
 }
 
 std::vector<std::vector<std::vector<bool>>> partitionGrid(const std::vector<std::vector<bool>>& grid, int noOfRobots) {
-    int totalFreeCells = grid.size() * grid[0].size(); // Assuming you count this correctly elsewhere
+    int totalFreeCells = countFreeCells(grid); // Use countFreeCells to get the actual free cells
+    std::cout << "Total Free Cells: " << totalFreeCells << std::endl;
     int freeCellsForRobot = totalFreeCells / noOfRobots;
-    int startRow = 0, startCol = 0;
-     int freeCellsAllocated = 0;
     
     std::vector<std::vector<std::vector<bool>>> partitions(noOfRobots, std::vector<std::vector<bool>>(grid.size(), std::vector<bool>(grid[0].size(), true)));
     std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
     
-    
-    int robot = 0;
-     bool found = false;
+    int robot = 0, remaining = freeCellsForRobot;
     for (int i = 0; i < grid.size() && robot < noOfRobots; ++i) {
-        int subGridFreeCellCount = totalFreeCells;
         for (int j = 0; j < grid[0].size() && robot < noOfRobots; ++j) {
-                if (!grid[i][j] && !visited[i][j]) { // If the cell is free and not visited
-                    int filled = floodFillUtil(grid, visited,  partitions[robot], i, j,freeCellsForRobot);
-                    freeCellsAllocated += filled;
-                    subGridFreeCellCount -= filled;
-                    if (!found) {
-                        found = true;
-                        // Update the start position for the next sub-grid
-                        startRow = i;
-                        startCol = j + 1;
-                        if (startCol >= grid[0].size()) {
-                            startRow++;
-                            startCol = 0;
-                        }
-                    }
-                }
+            if (!grid[i][j] && !visited[i][j]) { // If the cell is free and not visited
+                // Reset remaining for each robot
+                remaining = freeCellsForRobot;
+                floodFillUtil(grid, visited, partitions[robot], i, j, remaining);
+                robot++; // Move on to the next robot after allocation
+            }
         }
     }
-    
     return partitions;
 }
+
 // int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::vector<bool>>& visited, std::vector<std::vector<bool>>& sub_grid, int i, int j, int& remaining) {
 //     if (i < 0 || i >= grid.size() || j < 0 || j >= grid[0].size() || visited[i][j] || grid[i][j] || remaining <= 0) {
 //         return 0;
@@ -142,15 +129,19 @@ std::vector<std::vector<std::vector<bool>>> floodFill(const std::vector<std::vec
 void printSubGrids(const std::vector<std::vector<std::vector<bool>>>& sub_grids) {
     for (size_t robot = 0; robot < sub_grids.size(); ++robot) {
         std::cout << "Sub-grid for Robot " << (robot + 1) << ":" << std::endl;
+        int freeCells = 0; // Counter for free cells in the current sub-grid
         for (const auto& row : sub_grids[robot]) {
             for (bool cell : row) {
+                if (!cell) freeCells++; // Increment if the cell is free (false)
                 std::cout << (cell ? "1 " : "0 "); // Print 1 for occupied (true), 0 for free (false)
             }
             std::cout << std::endl; // New line at the end of each row
         }
-        std::cout << std::endl; // Separate each robot's sub-grid for clarity
+        // Print the count of free cells for this robot's sub-grid
+        std::cout << "Free Cells for Robot " << (robot + 1) << ": " << freeCells << std::endl << std::endl;
     }
 }
+
 
 inline bool operator<(const Point_t& lhs, const Point_t& rhs) {
     // Compare based on x and y values
