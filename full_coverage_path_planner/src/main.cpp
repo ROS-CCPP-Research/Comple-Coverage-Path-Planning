@@ -315,8 +315,9 @@ int main(int argc, char** argv)
         sub_region_Scaled.x = single.front().x;
         sub_region_Scaled.y = single.front().y;
         std::list<Point_t> sub_region_path;
+        std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
 
-        sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points);
 
         // sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
 
@@ -334,12 +335,12 @@ int main(int argc, char** argv)
         sub_agentPaths[index].header.stamp = ros::Time::now();
         sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin());
 
-        for (const auto& pose : sub_plan)
-        {
-            sub_agentPaths[index].poses.push_back(pose);
-        }
+        // for (const auto& pose : sub_plan)
+        // {
+        //     sub_agentPaths[index].poses.push_back(pose);
+        // }
 
-        sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+        // sub_waypointPublishers[index].publish(sub_agentPaths[index]);
 
         // merged_path.insert(merged_path.end(), sub_region_path.begin(),sub_region_path.end());
         if (!merged_path.empty()) {

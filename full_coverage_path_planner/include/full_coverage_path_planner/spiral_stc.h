@@ -45,7 +45,8 @@ public:
    * @return list of nodes that form the spiral
    */
   static std::list<gridNode_t> new_spiral(std::vector<std::vector<bool> > const &grid, std::list<gridNode_t> &init,
-                                      std::vector<std::vector<bool> > &visited);
+                                      std::vector<std::vector<bool> > &visited,
+                                      std::vector<std::vector<bool>> &narrow_area_grid_points);
 
   /**
    * Perform Spiral-STC (Spanning Tree Coverage) coverage path planning.
@@ -71,7 +72,8 @@ public:
   static std::list<Point_t> new_spiral_stc(std::vector<std::vector<bool> > const &grid,
                                         Point_t &init,
                                         int &multiple_pass_counter,
-                                        int &visited_counter);
+                                        int &visited_counter,
+                                        std::vector<std::vector<bool>> &narrow_area_grid_points);
 
   /**
      * Find a path that does the boustrophedon pattern starting from init until a dead end is reached in the grid
