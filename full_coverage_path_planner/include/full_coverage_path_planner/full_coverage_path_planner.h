@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 /** include the libraries you need in your planner here */
 /** for global path planner interface */
 #include <fstream>
@@ -52,6 +49,7 @@ enum
   eDirDown = -2,
 };
 
+
 namespace full_coverage_path_planner
 {
 class FullCoveragePathPlanner
@@ -75,7 +73,7 @@ public:
   virtual bool makePlan(const geometry_msgs::PoseStamped& start,
                         const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan) = 0;
 
-protected:
+public:
   /**
    * Convert internal representation of a to a ROS path
    * @param start Start pose of robot
@@ -100,6 +98,8 @@ protected:
                  float toolRadius,
                  geometry_msgs::PoseStamped const& realStart,
                  Point_t& scaledStart);
+
+                 
   ros::Publisher plan_pub_;
   ros::ServiceClient cpp_grid_client_;
   nav_msgs::OccupancyGrid cpp_grid_;
@@ -110,7 +110,14 @@ protected:
   fPoint_t grid_origin_;
   bool initialized_;
   geometry_msgs::PoseStamped previous_goal_;
+  std::string robotNamespace;
+  std::string start_pose;
+  costmap_2d::Costmap2DROS* costmap_ros_;
+  costmap_2d::Costmap2D* costmap_;
+  std::vector<std::list<Point_t>> sub_paths_array;
 
+
+  
   struct spiral_cpp_metrics_type
   {
     int visited_counter;

@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 #include <list>
 #include <vector>
 
@@ -50,8 +47,8 @@ void FullCoveragePathPlanner::publishPlan(const std::vector<geometry_msgs::PoseS
 
   if (!path.empty())
   {
-    gui_path.header.frame_id = path[0].header.frame_id;
-    gui_path.header.stamp = path[0].header.stamp;
+    gui_path.header.frame_id = "map";
+    gui_path.header.stamp = ros::Time::now();
   }
 
   // Extract the plan in world co-ordinates, we assume the path is all in the same frame
@@ -162,8 +159,8 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
   /* Add poses from current position to start of plan */
 
   // Compute angle between current pose and first plan point
-  double dy = plan.begin()->pose.position.y - start.pose.position.y;
-  double dx = plan.begin()->pose.position.x - start.pose.position.x;
+  double dy = plan.begin()->pose.position.y - plan.front().pose.position.x;
+  double dx = plan.begin()->pose.position.x - plan.front().pose.position.y;
   // Arbitrary choice of 100.0*FLT_EPSILON to determine minimum angle precision of 1%
   if (!(fabs(dy) < 100.0 * FLT_EPSILON && fabs(dx) < 100.0 * FLT_EPSILON))
   {
@@ -174,13 +171,13 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
     extra_pose = *plan.begin();
     extra_pose.pose.orientation = quat_temp;
     plan.insert(plan.begin(), extra_pose);
-    extra_pose = start;
+    extra_pose = plan.front();
     extra_pose.pose.orientation = quat_temp;
     plan.insert(plan.begin(), extra_pose);
   }
 
   // Insert current pose
-  plan.insert(plan.begin(), start);
+  plan.insert(plan.begin(), plan.front());
 
   ROS_INFO("Plan ready containing %lu goals!", plan.size());
 }
@@ -213,6 +210,12 @@ bool FullCoveragePathPlanner::parseGrid(nav_msgs::OccupancyGrid const& cpp_grid_
                              floor(cpp_grid_.info.width / tile_size_)));
   scaledStart.y = static_cast<unsigned int>(clamp((realStart.pose.position.y - grid_origin_.y) / tile_size_, 0.0,
                              floor(cpp_grid_.info.height / tile_size_)));
+
+  std::cout<<"inside parse grid_origin_ x : "<<grid_origin_.x <<std::endl;
+  std::cout<<"inside parse grid_origin_ y : "<<grid_origin_.y <<std::endl;
+
+  std::cout<<"inside parse scale x : "<<scaledStart.x <<std::endl;
+  std::cout<<"inside parse scale y : "<<scaledStart.y <<std::endl;
 
   // Scale grid
   for (iy = 0; iy < nRows; iy = iy + nodeSize)

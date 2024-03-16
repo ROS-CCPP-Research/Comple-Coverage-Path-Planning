@@ -1,13 +1,14 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 #include <algorithm>
 #include <iostream>
 #include <limits>
 #include <list>
 #include <vector>
-
+#include <algorithm> 
 #include <full_coverage_path_planner/common.h>
+
+std::vector<std::pair<int, int>> bfs_directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+std::vector<std::pair<int, int>> bfs_directions_vertical = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+
 
 int distanceToClosestPoint(Point_t poi, std::list<Point_t> const& goals)
 {
@@ -120,7 +121,7 @@ bool a_star_to_open_space(std::vector<std::vector<bool> > const &grid, gridNode_
           std::vector<gridNode_t>::iterator it = --(nn.end());
           dx = it->pos.x - (it - 1)->pos.x;
           dy = it->pos.y - (it - 1)->pos.y;
-          // TODO(CesarLopez) docs: this seems to cycle through directions
+          // TODO docs: this seems to cycle through directions
           // (notice the shift-by-one between both sides of the =)
           dx_prev = dx;
           dx = -dy;
@@ -290,6 +291,17 @@ void printGrid(std::vector<std::vector<bool> > const& grid)
   }
 }
 
+void printGridBinary(std::vector<std::vector<bool> > const& grid)
+{
+  for (const auto& row : grid) {
+        for (bool cell : row) {
+            // Print '1' for true and '0' for false
+            std::cout << (cell ? "1 " : "0 ");
+        }
+        std::cout << std::endl;
+    }
+}
+
 std::list<Point_t> map_2_goals(std::vector<std::vector<bool> > const& grid, bool value_to_search)
 {
   std::list<Point_t> goals;
@@ -308,4 +320,533 @@ std::list<Point_t> map_2_goals(std::vector<std::vector<bool> > const& grid, bool
     }
   }
   return goals;
+}
+
+bool validMove(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited)
+{
+    return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen);  // the path node is unvisited
+    // ??????????? meaning, not visited, and no obstacles.
+}
+
+bool inValidMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited,
+               std::vector<std::vector<bool>> narrow_area_grid_points)
+{
+    return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
+           && narrow_area_grid_points[y2][x2]);  // the path node is unvisited
+    // ??????????? meaning, not visited, and no obstacles.
+}
+
+bool validMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited,
+               std::vector<std::vector<bool>> narrow_area_grid_points)
+{
+    return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
+           && !narrow_area_grid_points[y2][x2]);  // the path node is unvisited
+    // ??????????? meaning, not visited, and no obstacles.
+}
+
+void addNodeToList(int x2, int y2, std::list<gridNode_t>& pathNodes, std::vector<std::vector<bool>>& visited)
+{
+    Point_t new_point = {x2, y2};
+    // clang-format off
+    gridNode_t new_node = {  // NOLINT
+        new_point,  // Point: x,y
+        0,          // Cost
+        0,          // Heuristic
+    };
+    // clang-format on
+    pathNodes.push_back(
+        new_node);  // turn point into gridnode and pushback in to path node to add new node!! ** add make it visited
+    visited[y2][x2] = eNodeVisited;  // Close node
+    return;
+}
+
+int dirWithMostSpace(int x_init, int y_init, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+                     std::vector<std::vector<bool>> const& visited, int ignoreDir)
+{
+    // this array stores how far the robot can travel in a straight line for each direction
+    int free_space_in_dir[5] = {0};
+    // for each direction
+    for (int i = 1; i < 5; i++)
+    {
+        // start from starting pos
+        int x2 = x_init;
+        int y2 = y_init;
+        do
+        {  // loop until hit wall
+            switch (i)
+            {
+            case east:
+                x2++;
+                break;
+            case west:
+                x2--;
+                break;
+            case north:
+                y2++;
+                break;
+            case south:
+                y2--;
+                break;
+            default:
+                break;
+            }
+            free_space_in_dir[i]++;
+            // counter for space
+        } while (validMove(x2, y2, nCols, nRows, grid, visited));  // NOLINT
+    }
+
+    //????????? use the biggest value***->
+    // set initial direction towards direction with most travel possible
+
+    int indexValue = 0;
+    int robot_dir = 1;
+    for (int i = 1; i <= 4; i++)
+    {
+        // std::cout << "free space in " << i << ": " << free_space_in_dir[i] << std::endl;
+        if (free_space_in_dir[i] > indexValue && i != ignoreDir)
+        {
+            robot_dir = i;
+            indexValue = free_space_in_dir[i];
+        }
+    }
+    return robot_dir;
+}
+
+
+
+void getExploredAreaDimensions(const std::vector<std::vector<bool>>& environment,
+                               int& explored_height, int& explored_width) {
+    int min_x = environment[0].size(); // Set to maximum possible value
+    int max_x = 0;
+    int min_y = environment.size();    // Set to maximum possible value
+    int max_y = 0;
+
+    // Iterate through the environment grid to find the boundaries of the explored area
+    for (int y = 0; y < environment.size(); ++y) {
+        for (int x = 0; x < environment[0].size(); ++x) {
+            if (environment[y][x]) { // Explored area
+                min_x = std::min(min_x, x);
+                max_x = std::max(max_x, x);
+                min_y = std::min(min_y, y);
+                max_y = std::max(max_y, y);
+            }
+        }
+    }
+
+    // Calculate dimensions of the explored area
+    explored_height = max_y - min_y + 1;
+    explored_width = max_x - min_x + 1;
+}
+
+void bfs(int x, int y,int sub_nRows, int sub_nCols,
+          std::vector<std::vector<bool>> const& sub_grid, 
+          std::vector<std::vector<bool>>& visited,
+          std::vector<std::vector<Node*>>& graph,
+          Node* & root) {
+    
+    std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+
+    std::queue<std::pair<int, int>> q;
+    q.push({x, y});
+    visited[x][y] = true;
+
+    Node* startNode = new Node(x, y);
+    graph[x][y] = startNode;
+
+    root = startNode;
+    
+    
+
+    while (!q.empty()) {
+        std::pair<int, int> curr = q.front();
+        q.pop();
+        int currX = curr.first;
+        int currY = curr.second;
+
+        Node* currNode = new Node(currX, currY);
+
+        // Process current node
+        // std::cout<<"current : "<<std::endl;
+        // std::cout << "(" << currX << ", " << currY << "),";
+
+        // Explore neighbors
+        for (const auto& dir : bfs_directions) {
+            int newX = currX + dir.first;
+            int newY = currY + dir.second;
+            if (newX >= 0 && newX < sub_nRows && newY >= 0 && newY < sub_nCols &&
+                sub_grid[newX][newY] == 0 && !visited[newX][newY]) {
+                
+                q.push({newX, newY});
+                visited[newX][newY] = true;
+
+                // std::cout << "(" << newX << ", " << newY << "),";
+
+                Node* newNode = new Node(newX, newY);
+                graph[newX][newY] = newNode;
+
+                // Connect the new node to the current node
+                graph[currX][currY]->neighbors.push_back(newNode);
+
+                // if(dir == bfs_directions[0]){
+                //   std::cout<<"this is up";
+                //   root->up = newNode;
+                //   newNode->down = root;
+                // }
+                // else if(dir == bfs_directions[1]){
+                //   std::cout<<"this is left";
+                //   root->left = newNode;
+                //   newNode->up = root;
+
+                // }
+                // else if(dir == bfs_directions[2]){
+                //   std::cout<<"this is back";
+                //   root->back = newNode;
+                // }
+                // else if (dir == bfs_directions[3]){
+                //   std::cout<<"this is right";
+                //   root->right = newNode;
+                //   newNode->back = root;
+                // }
+
+                if (newX > currX && newY == currY) {
+                    graph[currX][currY]->left = newNode;
+                } else if (newX == currX && newY > currY) {
+                    graph[currX][currY]->right = newNode;
+                }
+
+            }
+        }
+    }
+}
+
+void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
+          std::vector<std::vector<bool>> const& sub_grid, 
+          std::vector<std::vector<bool>>& visited,
+          std::vector<std::vector<Node*>>& graph,
+          Node* & root) {
+    
+    std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+
+    std::queue<std::pair<int, int>> q;
+    q.push({x, y});
+    visited[x][y] = true;
+
+    Node* startNode = new Node(x, y);
+    graph[x][y] = startNode;
+
+    root = startNode;
+    
+    
+
+    while (!q.empty()) {
+        std::pair<int, int> curr = q.front();
+        q.pop();
+        int currX = curr.first;
+        int currY = curr.second;
+
+        Node* currNode = new Node(currX, currY);
+
+        // Process current node
+        // std::cout<<"current : "<<std::endl;
+        // std::cout << "(" << currX << ", " << currY << "),";
+
+        // Explore neighbors
+        for (const auto& dir : bfs_directions_vertical) {
+            int newX = currX + dir.first;
+            int newY = currY + dir.second;
+            if (newX >= 0 && newX < sub_nRows && newY >= 0 && newY < sub_nCols &&
+                sub_grid[newX][newY] == 0 && !visited[newX][newY]) {
+                
+                q.push({newX, newY});
+                visited[newX][newY] = true;
+
+                // std::cout << "(" << newX << ", " << newY << "),";
+
+                Node* newNode = new Node(newX, newY);
+                graph[newX][newY] = newNode;
+
+                // Connect the new node to the current node
+                graph[currX][currY]->neighbors.push_back(newNode);
+
+                // if(dir == bfs_directions[0]){
+                //   std::cout<<"this is up";
+                //   root->up = newNode;
+                //   newNode->down = root;
+                // }
+                // else if(dir == bfs_directions[1]){
+                //   std::cout<<"this is left";
+                //   root->left = newNode;
+                //   newNode->up = root;
+
+                // }
+                // else if(dir == bfs_directions[2]){
+                //   std::cout<<"this is back";
+                //   root->back = newNode;
+                // }
+                // else if (dir == bfs_directions[3]){
+                //   std::cout<<"this is right";
+                //   root->right = newNode;
+                //   newNode->back = root;
+                // }
+
+                if (newX > currX && newY == currY) {
+                    graph[currX][currY]->left = newNode;
+                } else if (newX == currX && newY > currY) {
+                    graph[currX][currY]->right = newNode;
+                }
+
+            }
+        }
+    }
+}
+
+void visualizeGraph(const std::vector<std::vector<Node*>>& graph) {
+    std::ofstream dotFile("graph.dot");
+    dotFile << "graph {\n";
+    std::unordered_set<Node*> visited;
+
+    for (const auto& row : graph) {
+        for (const auto& node : row) {
+            if (node && visited.find(node) == visited.end()) {
+                visited.insert(node);
+                dotFile << "  \"" << node->x << "_" << node->y << "\";\n"; // Enclose node name in double quotes
+                for (const auto& neighbor : node->neighbors) {
+                    dotFile << "  \"" << node->x << "_" << node->y << "\" -- \"" << neighbor->x << "_" << neighbor->y << "\";\n"; // Enclose node names in double quotes
+                }
+            }
+        }
+    }
+
+    dotFile << "}\n";
+    dotFile.close();
+
+    // Convert dot file to image using Graphviz (dot) command
+    system("dot -Tpng -O graph.dot");
+}
+
+
+void printGraph(const std::vector<std::vector<Node*>>& graph,int sub_nRows, int sub_nCols, std::vector<std::vector<bool>> const& sub_grid) {
+    // Print the nodes and connections in the graph
+    std::cout<<"print graph"<<std::endl;
+    for (int i = 0; i < sub_nRows; ++i) {
+        for (int j = 0; j < sub_nCols; ++j) {
+            if (sub_grid[i][j]) {
+                std::cout << "(" << i << "," << j << "): ";
+                for (const auto& neighbor : graph[i][j]->neighbors) {
+                    std::cout << "(" << neighbor->x << "," << neighbor->y << ") ";
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+}
+
+
+// Function to explore the free area starting from a given point
+void explore_free_area(std::vector<std::vector<bool>>& matrix, int start_x, int start_y, std::vector<std::vector<bool>>& visited, std::vector<Point_t>& boundary) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    // Define the directions to explore: up, down, left, right
+    std::vector<std::pair<int, int>> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    
+    // BFS exploration starting from the given point
+    std::queue<Point_t> q;
+    q.push({start_x, start_y});
+    visited[start_x][start_y] = true;
+    
+    while (!q.empty()) {
+        Point_t current = q.front();
+        q.pop();
+        boundary.push_back(current);
+        
+        for (const auto& dir : directions) {
+            int nx = current.x + dir.first;
+            int ny = current.y + dir.second;
+            if (nx >= 0 && nx < rows && ny >= 0 && ny < cols && matrix[nx][ny] == 0 && !visited[nx][ny]) {
+                q.push({nx, ny});
+                visited[nx][ny] = true;
+            }
+        }
+    }
+    std::sort(boundary.begin(), boundary.end(), comparePoints);
+}
+
+// Function to print the matrix based on the boundary list
+void print_matrix(std::vector<std::vector<bool>>& matrix, std::vector<Point_t>& boundary) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            bool inside_boundary = false;
+            for (const auto& point : boundary) {
+                if (point.y == i && point.x== j) {
+                    inside_boundary = true;
+                    break;
+                }
+            }
+            std::cout << (inside_boundary ? '0' : '1') << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+// Function to partition the free area into smaller regions
+std::list<std::vector<Point_t>> partition_free_area(std::list<Point_t>& boundary, int partition_count) {
+    std::list<std::vector<Point_t>> partitions;
+    std::vector<Point_t> sub;
+
+    // for (const auto part : partitions){
+    //   sub.push_back(part.)
+    // }
+    
+
+
+    return partitions;
+}
+
+void create_explored_grid(std::vector<std::vector<bool>> matrix, std::vector<Point_t> boundary,std::vector<std::vector<bool>>& explored_free_area_grid) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            bool inside_boundary = false;
+            for (const auto& point : boundary) {
+                if (point.x == i && point.y == j) {
+                    inside_boundary = true;
+                    break;
+                }
+            }
+            if(inside_boundary){
+              explored_free_area_grid[i][j] = false;
+            }
+            else{
+              explored_free_area_grid[i][j] = true;
+            }
+        
+        }
+    }
+}
+
+void create_explored_grid_node(std::vector<std::vector<bool>> matrix, std::vector<Node*> boundary,std::vector<std::vector<bool>>& explored_free_area_grid) {
+    int rows = matrix.size();
+    int cols = matrix[0].size();
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            bool inside_boundary = false;
+            for (const auto& point : boundary) {
+                if (point->x == i && point->y == j) {
+                    inside_boundary = true;
+                    break;
+                }
+            }
+            if(inside_boundary){
+              explored_free_area_grid[i][j] = false;
+            }
+            else{
+              explored_free_area_grid[i][j] = true;
+            }
+        
+        }
+    }
+}
+
+void preOrder(  Node* root, 
+                int depth, 
+                Node*& currentStart, 
+                std::vector<Node*>& current_root, 
+                std::vector<std::vector<Node*>>& narrow_area_points,
+                std::vector<std::vector<bool>>& narrow_area_grid_points,
+                std::vector<Node*>& temp_root
+            ){
+
+        if (root == nullptr) {
+                return;
+        }
+        for (int i = 0; i < depth; ++i) {
+        std::cout << "  ";
+        }
+
+        preOrder(root->left,depth+1,currentStart,current_root,narrow_area_points,narrow_area_grid_points,temp_root);
+
+        preOrder(root->right,depth+1,currentStart,current_root,narrow_area_points,narrow_area_grid_points,temp_root);
+
+        if(currentStart == nullptr){
+            currentStart = root;
+        }
+
+        if(root->left != nullptr){
+
+            current_root.push_back(root);
+
+            if(current_root.size() % 2 ==1 || current_root.size() <= 2){
+
+                if (!narrow_area_points.empty() &&
+                    (current_root.front()->y == narrow_area_points.back().front()->y ||
+                    current_root.back()->y == narrow_area_points.back().back()->y )
+                ) {
+
+                        narrow_area_points.back().insert(narrow_area_points.back().end(),
+                                      current_root.begin(), current_root.end());
+                }
+                else{
+                    narrow_area_points.push_back(current_root);
+                }
+
+                for(const auto point : current_root){
+                    narrow_area_grid_points[point->x][point->y] = false;
+                }
+                current_root.clear();
+            }
+        }
+        else if(root != nullptr){
+            
+            current_root.push_back(root);
+        }
+        
+        std::cout << "(" << root->x << "," << root->y << ")" << std::endl;
+
+}
+
+void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<std::vector<Node*>>& partitions, std::vector<Node*>& partition_point){
+
+        if(!node){
+          return;
+        } 
+
+        partition_point.push_back(node);
+
+        if(partition_point.size()>=single_partitin_point_count){
+          partitions.push_back(partition_point);
+          partition_point.clear();
+          partition_point.push_back(node);
+        }
+
+        preOrderPartition(node->left,single_partitin_point_count,partitions,partition_point);
+
+        preOrderPartition(node->right,single_partitin_point_count,partitions,partition_point);
+
+        
+
+    }
+
+size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph) {
+    size_t count = 0;
+    for (const auto& row : explored_area_graph) {
+        for (const auto* node : row) {
+            if (node != nullptr) {
+                ++count; // Count each non-null node
+            }
+        }
+    }
+    return count;
 }

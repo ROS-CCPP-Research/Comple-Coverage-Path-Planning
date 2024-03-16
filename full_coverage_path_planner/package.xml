@@ -3,13 +3,8 @@
   <name>full_coverage_path_planner</name>
   <version>0.6.4</version>
   <description>Full coverage path planning provides a move_base_flex plugin that can plan a path that will fully cover a given area</description>
-  <author email="cesar.lopez@nobleo.nl">Cesar Lopez</author>
-  <author email="ferry.schoenmakers@nobleo.nl">Ferry Schoenmakers</author>
-  <author email="tim.clephas@nobleo.nl">Tim Clephas</author>
-  <author email="jerrel.unkel@nobleo.nl">Jerrel Unkel</author>
-  <author>Loy van Beek</author>
-  <author>Yury Brodskiy</author>
-  <maintainer email="cesar.lopez@nobleo.nl">Cesar Lopez</maintainer>
+  <author email="abc@gmail.com">abc</author>
+  <maintainer email="abc@gmail.com">abc</maintainer>
 
   <license>Apache 2.0</license>
   <url>http://wiki.ros.org/full_coverage_path_planner</url>
@@ -23,6 +18,13 @@
   <depend>nav_core</depend>
   <depend>roscpp</depend>
   <depend>tf2_ros</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2</depend>
+  <depend>tf</depend>
   <exec_depend>amcl</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>map_server</exec_depend>

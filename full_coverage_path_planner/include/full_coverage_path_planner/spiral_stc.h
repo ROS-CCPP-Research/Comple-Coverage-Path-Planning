@@ -1,6 +1,3 @@
-//
-// Copyright [2020] Nobleo Technology"  [legal/copyright]
-//
 #include <list>
 #include <string>
 #include <vector>
@@ -26,9 +23,10 @@ using std::string;
 #include "full_coverage_path_planner/full_coverage_path_planner.h"
 namespace full_coverage_path_planner
 {
-class SpiralSTC : public nav_core::BaseGlobalPlanner, private full_coverage_path_planner::FullCoveragePathPlanner
+class SpiralSTC : public nav_core::BaseGlobalPlanner, public full_coverage_path_planner::FullCoveragePathPlanner
 {
 public:
+
   /**
    * Find a path that spirals inwards from init until an obstacle is seen in the grid
    * @param grid 2D grid of bools. true == occupied/blocked/obstacle
@@ -38,6 +36,17 @@ public:
    */
   static std::list<gridNode_t> spiral(std::vector<std::vector<bool> > const &grid, std::list<gridNode_t> &init,
                                       std::vector<std::vector<bool> > &visited);
+
+  /**
+   * Find a path that spirals inwards from init until an obstacle is seen in the grid
+   * @param grid 2D grid of bools. true == occupied/blocked/obstacle
+   * @param init start position
+   * @param visited all the nodes visited by the spiral
+   * @return list of nodes that form the spiral
+   */
+  static std::list<gridNode_t> new_spiral(std::vector<std::vector<bool> > const &grid, std::list<gridNode_t> &init,
+                                      std::vector<std::vector<bool> > &visited,
+                                      std::vector<std::vector<bool>> &narrow_area_grid_points);
 
   /**
    * Perform Spiral-STC (Spanning Tree Coverage) coverage path planning.
@@ -51,6 +60,63 @@ public:
                                         Point_t &init,
                                         int &multiple_pass_counter,
                                         int &visited_counter);
+
+  /**
+   * Perform Spiral-STC (Spanning Tree Coverage) coverage path planning.
+   * In essence, the robot moves forward until an obstacle or visited node is met, then turns right (making a spiral)
+   * When stuck in the middle of the spiral, use A* to get out again and start a new spiral, until a* can't find a path to uncovered cells
+   * @param grid
+   * @param init
+   * @return
+   */
+  static std::list<Point_t> new_spiral_stc(std::vector<std::vector<bool> > const &grid,
+                                        Point_t &init,
+                                        int &multiple_pass_counter,
+                                        int &visited_counter,
+                                        std::vector<std::vector<bool>> &narrow_area_grid_points);
+
+  /**
+     * Find a path that does the boustrophedon pattern starting from init until a dead end is reached in the grid
+     * @param grid 2D grid of bools. true == occupied/blocked/obstacle
+     * @param init start position
+     * @param visited all the nodes visited by the boustrophedon pattern
+     * @return list of nodes that form the boustrophedon pattern
+     */
+  static std::list<gridNode_t> boustrophedon(std::vector<std::vector<bool>> const& grid, std::list<gridNode_t>& init,
+                                               std::vector<std::vector<bool>>& visited);
+
+  // ????????? Why is init a list?
+    /**
+     * Perform Boustrophedon-STC (Spanning Tree Coverage) coverage path planning.
+     * In essence, the robot moves forward until an obstacle or visited node is met, then turns right or left (making a
+     * boustrophedon pattern) When stuck in the middle of the boustrophedon, use A* to get out again and start a new
+     * boustrophedon, until a* can't find a path to uncovered cells
+     * @param grid
+     * @param init
+     * @return
+     */
+  static std::list<Point_t> boustrophedon_stc(std::vector<std::vector<bool>> const& grid, Point_t& init,
+                                                int& multiple_pass_counter, int& visited_counter);
+
+  /**
+  *crete sub regions
+  * @param environment
+  * @param sub_width
+  * @param sub_height
+  * @return sub_regions // return the
+  */
+  static std::list<std::vector<Point_t>> explore_subregions(const std::vector<std::vector<bool>>& environment,
+                                                               int sub_width, int sub_height,int sub_area_count);
+
+  static bool is_narrow_area(std::vector<std::vector<bool>> const &grid, Point_t pos);
+
+  static void move_boustrophedon_left_to_right(std::vector<std::vector<bool>> const &grid,
+                                                 std::list<gridNode_t> &pathNodes,
+                                                 std::vector<std::vector<bool>> &visited);
+  static void move_boustrophedon_right_to_left(std::vector<std::vector<bool>> const &grid,
+                                                 std::list<gridNode_t> &pathNodes,
+                                                 std::vector<std::vector<bool>> &visited);
+
 
 private:
   /**
