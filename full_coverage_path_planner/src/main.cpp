@@ -9,6 +9,72 @@
 #include <string>
 #include <tf2/LinearMath/Quaternion.h>
 #include <vector>
+#include <unordered_map>
+#include <utility> // for std::pair
+#include <functional> // For std::hash
+
+// using Node = std::pair<int, int>; // Node representation as a pair of coordinates
+// using Graph = std::unordered_map<Node, std::vector<Node>>; // Graph as an adjacency list
+
+// // Define the Node type
+// using Node = std::pair<int, int>;
+
+// // Specialize std::hash for Node
+// namespace std {
+// template <>
+// struct hash<Node> {
+//     size_t operator()(const Node& node) const {
+//         // Compute individual hash values for first and second,
+//         // and then combine them
+//         size_t h1 = std::hash<int>()(node.first);
+//         size_t h2 = std::hash<int>()(node.second);
+
+//         // Combine the hash values (example of a simple way to combine)
+//         return h1 ^ (h2 << 1); 
+//     }
+// };
+// }
+
+// Graph convertGridToGraph(const std::vector<std::vector<int>>& grid) {
+//     Graph graph;
+//     int numRows = grid.size();
+//     int numCols = grid[0].size();
+
+//     for (int i = 0; i < numRows; ++i) {
+//         for (int j = 0; j < numCols; ++j) {
+//             if (grid[i][j] == 0) { // Assuming 0 represents a walkable cell
+//                 Node node = {i, j};
+
+//                 // Check for possible movements (up, down, left, right)
+//                 std::vector<Node> neighbors;
+//                 if (i > 0 && grid[i-1][j] == 0) neighbors.push_back({i-1, j}); // Up
+//                 if (i < numRows-1 && grid[i+1][j] == 0) neighbors.push_back({i+1, j}); // Down
+//                 if (j > 0 && grid[i][j-1] == 0) neighbors.push_back({i, j-1}); // Left
+//                 if (j < numCols-1 && grid[i][j+1] == 0) neighbors.push_back({i, j+1}); // Right
+
+//                 // Add the node and its neighbors to the graph
+//                 graph[node] = neighbors;
+//             }
+//         }
+//     }
+
+//     return graph;
+// }
+
+// void printGraph(const std::unordered_map<Node, std::vector<Node>>& graph) {
+//     for (const auto& pair : graph) {
+//         const Node& node = pair.first;
+//         const std::vector<Node>& neighbors = pair.second;
+        
+//         std::cout << "Node (" << node.first << ", " << node.second << "): ";
+        
+//         for (const auto& neighbor : neighbors) {
+//             std::cout << "(" << neighbor.first << ", " << neighbor.second << ") ";
+//         }
+        
+//         std::cout << std::endl;
+//     }
+// }
 
 using PoseStamped = geometry_msgs::PoseStamped;
 
@@ -234,6 +300,9 @@ int main(int argc, char** argv)
 
     printGridBinary(explored_free_area_grid);
 
+
+    // printGridBinary(explored_free_area_grid);
+    // convertGridToGraph(grid)
 
      std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
 

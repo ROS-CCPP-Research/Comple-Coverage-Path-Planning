@@ -1,5 +1,5 @@
 <launch>
-    <arg name="map" default="turtlebot3_house"/>
+    <arg name="map" default="house05"/>
 
     <!--    Gazebo world-->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
