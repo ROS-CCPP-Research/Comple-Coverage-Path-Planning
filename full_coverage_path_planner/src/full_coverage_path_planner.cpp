@@ -159,8 +159,8 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
   /* Add poses from current position to start of plan */
 
   // Compute angle between current pose and first plan point
-  double dy = plan.begin()->pose.position.y - start.pose.position.y;
-  double dx = plan.begin()->pose.position.x - start.pose.position.x;
+  double dy = plan.begin()->pose.position.y - plan.front().pose.position.x;
+  double dx = plan.begin()->pose.position.x - plan.front().pose.position.y;
   // Arbitrary choice of 100.0*FLT_EPSILON to determine minimum angle precision of 1%
   if (!(fabs(dy) < 100.0 * FLT_EPSILON && fabs(dx) < 100.0 * FLT_EPSILON))
   {
@@ -171,13 +171,13 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
     extra_pose = *plan.begin();
     extra_pose.pose.orientation = quat_temp;
     plan.insert(plan.begin(), extra_pose);
-    extra_pose = start;
+    extra_pose = plan.front();
     extra_pose.pose.orientation = quat_temp;
     plan.insert(plan.begin(), extra_pose);
   }
 
   // Insert current pose
-  plan.insert(plan.begin(), start);
+  plan.insert(plan.begin(), plan.front());
 
   ROS_INFO("Plan ready containing %lu goals!", plan.size());
 }

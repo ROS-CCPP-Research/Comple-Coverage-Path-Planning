@@ -7,6 +7,7 @@
 #include <full_coverage_path_planner/common.h>
 
 std::vector<std::pair<int, int>> bfs_directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+std::vector<std::pair<int, int>> bfs_directions_vertical = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
 
 
 int distanceToClosestPoint(Point_t poi, std::list<Point_t> const& goals)
@@ -329,6 +330,26 @@ bool validMove(int x2, int y2, int nCols, int nRows, std::vector<std::vector<boo
     // ??????????? meaning, not visited, and no obstacles.
 }
 
+bool inValidMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited,
+               std::vector<std::vector<bool>> narrow_area_grid_points)
+{
+    return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
+           && narrow_area_grid_points[y2][x2] == 1);  // the path node is unvisited
+    // ??????????? meaning, not visited, and no obstacles.
+}
+
+bool validMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::vector<bool>> const& grid,
+               std::vector<std::vector<bool>> const& visited,
+               std::vector<std::vector<bool>> narrow_area_grid_points)
+{
+    return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
+           && narrow_area_grid_points[y2][x2] == 0);  // the path node is unvisited
+    // ??????????? meaning, not visited, and no obstacles.
+}
+
 void addNodeToList(int x2, int y2, std::list<gridNode_t>& pathNodes, std::vector<std::vector<bool>>& visited)
 {
     Point_t new_point = {x2, y2};
@@ -428,7 +449,8 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
           std::vector<std::vector<bool>>& visited,
           std::vector<std::vector<Node*>>& graph,
           Node* & root) {
-
+    
+    // std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
 
     std::queue<std::pair<int, int>> q;
     q.push({x, y});
@@ -436,7 +458,10 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
 
     Node* startNode = new Node(x, y);
     graph[x][y] = startNode;
+
     root = startNode;
+    
+    
 
     while (!q.empty()) {
         std::pair<int, int> curr = q.front();
@@ -444,18 +469,23 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
         int currX = curr.first;
         int currY = curr.second;
 
+        Node* currNode = new Node(currX, currY);
+
         // Process current node
+        // std::cout<<"current : "<<std::endl;
         // std::cout << "(" << currX << ", " << currY << "),";
 
         // Explore neighbors
-        int index = 0;
         for (const auto& dir : bfs_directions) {
             int newX = currX + dir.first;
             int newY = currY + dir.second;
             if (newX >= 0 && newX < sub_nRows && newY >= 0 && newY < sub_nCols &&
                 sub_grid[newX][newY] == 0 && !visited[newX][newY]) {
+                
                 q.push({newX, newY});
                 visited[newX][newY] = true;
+
+                // std::cout << "(" << newX << ", " << newY << "),";
 
                 Node* newNode = new Node(newX, newY);
                 graph[newX][newY] = newNode;
@@ -463,33 +493,118 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
                 // Connect the new node to the current node
                 graph[currX][currY]->neighbors.push_back(newNode);
 
-                if(index==0){
-                  root->up = newNode;
-                  newNode->down = root;
-                }
-                else if(index == 1){
-                  root->left = newNode;
-                  newNode->up = root;
+                // if(dir == bfs_directions[0]){
+                //   std::cout<<"this is up";
+                //   root->up = newNode;
+                //   newNode->down = root;
+                // }
+                // else if(dir == bfs_directions[1]){
+                //   std::cout<<"this is left";
+                //   root->left = newNode;
+                //   newNode->up = root;
 
-                }
-                else if(index == 2){
-                  root->back = newNode;
-                }
-                else{
-                  root->right = newNode;
-                  newNode->back = root;
-                }
+                // }
+                // else if(dir == bfs_directions[2]){
+                //   std::cout<<"this is back";
+                //   root->back = newNode;
+                // }
+                // else if (dir == bfs_directions[3]){
+                //   std::cout<<"this is right";
+                //   root->right = newNode;
+                //   newNode->back = root;
+                // }
 
                 if (newX > currX && newY == currY) {
                     graph[currX][currY]->left = newNode;
                 } else if (newX == currX && newY > currY) {
                     graph[currX][currY]->right = newNode;
                 }
+
             }
         }
     }
 }
 
+void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
+          std::vector<std::vector<bool>> const& sub_grid, 
+          std::vector<std::vector<bool>>& visited,
+          std::vector<std::vector<Node*>>& graph,
+          Node* & root) {
+    
+    // std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+
+    std::queue<std::pair<int, int>> q;
+    q.push({x, y});
+    visited[x][y] = true;
+
+    Node* startNode = new Node(x, y);
+    graph[x][y] = startNode;
+
+    root = startNode;
+    
+    
+
+    while (!q.empty()) {
+        std::pair<int, int> curr = q.front();
+        q.pop();
+        int currX = curr.first;
+        int currY = curr.second;
+
+        Node* currNode = new Node(currX, currY);
+
+        // Process current node
+        // std::cout<<"current : "<<std::endl;
+        // std::cout << "(" << currX << ", " << currY << "),";
+
+        // Explore neighbors
+        for (const auto& dir : bfs_directions_vertical) {
+            int newX = currX + dir.first;
+            int newY = currY + dir.second;
+            if (newX >= 0 && newX < sub_nRows && newY >= 0 && newY < sub_nCols &&
+                sub_grid[newX][newY] == 0 && !visited[newX][newY]) {
+                
+                q.push({newX, newY});
+                visited[newX][newY] = true;
+
+                // std::cout << "(" << newX << ", " << newY << "),";
+
+                Node* newNode = new Node(newX, newY);
+                graph[newX][newY] = newNode;
+
+                // Connect the new node to the current node
+                graph[currX][currY]->neighbors.push_back(newNode);
+
+                // if(dir == bfs_directions[0]){
+                //   std::cout<<"this is up";
+                //   root->up = newNode;
+                //   newNode->down = root;
+                // }
+                // else if(dir == bfs_directions[1]){
+                //   std::cout<<"this is left";
+                //   root->left = newNode;
+                //   newNode->up = root;
+
+                // }
+                // else if(dir == bfs_directions[2]){
+                //   std::cout<<"this is back";
+                //   root->back = newNode;
+                // }
+                // else if (dir == bfs_directions[3]){
+                //   std::cout<<"this is right";
+                //   root->right = newNode;
+                //   newNode->back = root;
+                // }
+
+                if (newX > currX && newY == currY) {
+                    graph[currX][currY]->left = newNode;
+                } else if (newX == currX && newY > currY) {
+                    graph[currX][currY]->right = newNode;
+                }
+
+            }
+        }
+    }
+}
 
 void visualizeGraph(const std::vector<std::vector<Node*>>& graph) {
     std::ofstream dotFile("graph.dot");
