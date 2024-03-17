@@ -336,7 +336,7 @@ bool inValidMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::
 {
     return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
            && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
-           && narrow_area_grid_points[y2][x2]);  // the path node is unvisited
+           && narrow_area_grid_points[y2][x2] == 1);  // the path node is unvisited
     // ??????????? meaning, not visited, and no obstacles.
 }
 
@@ -346,7 +346,7 @@ bool validMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::ve
 {
     return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
            && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
-           && !narrow_area_grid_points[y2][x2]);  // the path node is unvisited
+           && narrow_area_grid_points[y2][x2] == 0);  // the path node is unvisited
     // ??????????? meaning, not visited, and no obstacles.
 }
 
@@ -450,7 +450,7 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
           std::vector<std::vector<Node*>>& graph,
           Node* & root) {
     
-    std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+    // std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
 
     std::queue<std::pair<int, int>> q;
     q.push({x, y});
@@ -531,7 +531,7 @@ void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
           std::vector<std::vector<Node*>>& graph,
           Node* & root) {
     
-    std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+    // std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
 
     std::queue<std::pair<int, int>> q;
     q.push({x, y});

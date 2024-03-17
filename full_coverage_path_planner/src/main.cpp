@@ -315,11 +315,12 @@ int main(int argc, char** argv)
         sub_region_Scaled.x = single.front().x;
         sub_region_Scaled.y = single.front().y;
         std::list<Point_t> sub_region_path;
-        std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
+        std::vector<std::vector<bool>> narrow_area_grid_points_v(nRows, std::vector<bool>(nCols, true));
+        std::vector<std::vector<bool>> narrow_area_grid_points_h(nRows, std::vector<bool>(nCols, true));
 
-        // sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points);
+        sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
 
-        sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        // sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
 
         planner.sub_paths_array.push_back(sub_region_path);
 
