@@ -1,5 +1,5 @@
 <launch>
-    <arg name="map" default="$(find full_coverage_path_planner)/maps/house01/map.yaml"/>
+    <arg name="map" default="$(find full_coverage_path_planner)/maps/modelHouse/map.yaml"/>
 
     <!--    Publish map-->
     <node pkg="map_server" name="grid_server" type="map_server"
