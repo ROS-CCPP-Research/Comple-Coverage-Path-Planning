@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <ros/ros.h>
 #include <random>
+#include <map> 
 
 namespace full_coverage_path_planner {
 
@@ -24,39 +25,71 @@ TaskAllocator::~TaskAllocator() {
     ROS_INFO("Task Allocator Node Shutting Down");
 }
 
-// Callback for dynamic topic subscription
 void TaskAllocator::dynamicCallback(const nav_msgs::Path::ConstPtr& msg, const std::string& topic, int robotId) {
     static int taskId = 0;
-    ROS_INFO("[DynamicCallback] Received task on topic: %s from Robot %d", topic.c_str(), robotId);
+    ROS_INFO("[DynamicCallback] Received task on topic: %s from Robots", topic.c_str(), robotId);
     Task task;
     task.id = taskId++;
     task.path = *msg;
     tasks_.push_back(task);
-
-    // Adjusted: Simulate bids immediately for the new task from all robots, including the one that received the task
     simulateBids(task.id);
 }
 
-// Adjusted: Simulate bids for a specific task from all robots, not just the one receiving the task
+void TaskAllocator::initializeRobotStartPositions(const std::vector<std::string>& robotNamespaces) {
+    robotStartLocations.resize(robotNamespaces.size());
+    for (int index = 0; index < robotNamespaces.size(); ++index) {
+        std::string paramName = robotNamespaces[index] + "/start_position";
+        double x, y;
+        nh_.getParam(paramName + "/x", x);
+        nh_.getParam(paramName + "/y", y);
+        robotStartLocations[index].x = x;
+        robotStartLocations[index].y = y;
+    }
+}
+
+void TaskAllocator::calculateBidsBasedOnDistance(int taskId) {
+    if (taskId < 0 || taskId >= tasks_.size()) {
+        ROS_WARN("Invalid task ID for bid calculation.");
+        return;
+    }
+    auto& taskStartPos = tasks_[taskId].path.poses.front().pose.position;
+    for (size_t i = 0; i < robotStartLocations.size(); ++i) {
+        auto dx = robotStartLocations[i].x - taskStartPos.x;
+        auto dy = robotStartLocations[i].y - taskStartPos.y;
+        double distance = std::sqrt(dx * dx + dy * dy);
+        double bidValue = 1 / (distance + 0.01); // Avoid division by zero
+        task_bids_[taskId].emplace_back(taskId, i, bidValue);
+    }
+}
+
 void TaskAllocator::simulateBids(int taskId) {
-    std::default_random_engine generator(taskId); // Use task ID as seed for reproducibility
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count() + taskId;
+    std::default_random_engine generator(seed);
     std::uniform_real_distribution<double> distribution(1.0, 10.0);
 
-    // Generate bids from all robots for the new task
+    bool allBidsReceived = true;
+
     for (int robotId = 0; robotId < dynamicSubscribers_.size(); ++robotId) {
-        double bidValue = distribution(generator); // Generate a bid value
+        double bidValue = distribution(generator);
         RobotBid bid(taskId, robotId, bidValue);
         task_bids_[taskId].push_back(bid);
         ROS_INFO("[simulateBids] Robot %d bids %f for Task %d", robotId, bidValue, taskId);
     }
 
-    // Allocate tasks only after all robots have bid for all tasks
-    if (tasks_.size() * dynamicSubscribers_.size() == task_bids_.size()) {
+    // Check if all tasks have bids from all robots
+    for (const auto& task : tasks_) {
+        if (task_bids_[task.id].size() < dynamicSubscribers_.size()) {
+            allBidsReceived = false;
+            break;
+        }
+    }
+
+    if (allBidsReceived) {
+        ROS_INFO("[simulateBids] All bids received, allocating tasks.");
         allocateTasks();
     }
 }
 
-// Allocate tasks ensuring one task per robot
 void TaskAllocator::allocateTasks() {
     ROS_INFO("[allocateTasks] Allocating tasks...");
     std::set<int> remainingTasks;
@@ -64,38 +97,60 @@ void TaskAllocator::allocateTasks() {
         remainingTasks.insert(task.id);
     }
 
-    std::set<int> remainingRobots;
-    for (int robotId = 0; robotId < dynamicSubscribers_.size(); ++robotId) {
-        remainingRobots.insert(robotId);
-    }
+    std::vector<int> remainingRobots(dynamicSubscribers_.size());
+    std::iota(remainingRobots.begin(), remainingRobots.end(), 0); 
 
-    // Assign each task to a unique robot
-    for (auto taskId : remainingTasks) {
-        if (remainingRobots.empty()) {
-            ROS_WARN("[allocateTasks] No available robots to assign tasks.");
+    std::map<int, int> taskAssignments; // Maps task IDs to robot IDs
+
+    while (!remainingTasks.empty() && !remainingRobots.empty()) {
+        for (auto taskId : remainingTasks) {
+            double highestBidValue = -1;
+            int highestBidRobotId = -1;
+            for (const auto& bid : task_bids_[taskId]) {
+                if (std::find(remainingRobots.begin(), remainingRobots.end(), bid.robot_id) != remainingRobots.end() && 
+                    (highestBidRobotId == -1 || bid.bid_value > highestBidValue)) {
+                    highestBidValue = bid.bid_value;
+                    highestBidRobotId = bid.robot_id;
+                }
+            }
+
+            if (highestBidRobotId != -1) {
+                // Assign this task to the robot with the highest bid
+                taskAssignments[taskId] = highestBidRobotId;
+                std_msgs::String msg;
+                std::stringstream ss;
+                ss << "Assign Task " << taskId << " to Robot " << highestBidRobotId;
+                msg.data = ss.str();
+                assignments_pub_.publish(msg);
+                ROS_INFO("[allocateTasks] %s", ss.str().c_str());
+
+                // Remove the assigned robot from the pool of available robots
+                remainingRobots.erase(std::remove(remainingRobots.begin(), remainingRobots.end(), highestBidRobotId), remainingRobots.end());
+            }
+        }
+
+        // Reevaluate remaining tasks for next iteration
+        std::set<int> newRemainingTasks;
+        for (const auto& task : tasks_) {
+            if (taskAssignments.find(task.id) == taskAssignments.end()) { // If this task hasn't been assigned
+                newRemainingTasks.insert(task.id);
+            }
+        }
+        remainingTasks.swap(newRemainingTasks);
+
+        // If no tasks were assigned in this iteration, break to avoid loop
+        if (remainingTasks.empty()) {
             break;
         }
-        auto& bids = task_bids_[taskId];
-        int winner = determineWinner(bids, assignedRobots); // Pass the set of assigned robots as the second argument
-        if (winner >= 0 && remainingRobots.find(winner) != remainingRobots.end()) {
-            assignedRobots.insert(winner);
-            std_msgs::String msg;
-            std::stringstream ss;
-            ss << "Assign Task " << taskId << " to Robot " << winner;
-            msg.data = ss.str();
-            assignments_pub_.publish(msg);
-            ROS_INFO("[allocateTasks] %s", ss.str().c_str());
-            remainingRobots.erase(winner);
-        } else {
-            ROS_WARN("[allocateTasks] No valid bid or robot already assigned for Task %d", taskId);
-        }
     }
 
-    // Reset for the next round of task allocations
-    tasks_.clear();
-    task_bids_.clear();
-    assignedRobots.clear();
+    // Print out the task assignments after all have been allocated
+    ROS_INFO("[allocateTasks] Task allocations completed. Summary:");
+    for (const auto& assignment : taskAssignments) {
+        ROS_INFO("Task %d assigned to Robot %d", assignment.first, assignment.second);
+    }
 }
+
 
 
 // Determine the winner based on the bids

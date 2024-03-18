@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <geometry_msgs/Point.h>
 
 namespace full_coverage_path_planner {
 
@@ -39,15 +40,20 @@ private:
     ros::Publisher assignments_pub_;
     std::vector<ros::Subscriber> dynamicSubscribers_;
     std::vector<Task> tasks_;
-    std::map<int, std::vector<RobotBid>> task_bids_; // Maps task IDs to bids
-    std::set<int> assignedRobots; // Keeps track of robots that have been assigned tasks
+    std::map<int, std::vector<RobotBid>> task_bids_;
+    std::vector<geometry_msgs::Point> robotStartLocations;
+
 
     void dynamicCallback(const nav_msgs::Path::ConstPtr& msg, const std::string& topic, int robotId);
-    void simulateBids(int taskId); // Adjusted to not directly use robotId
+    void simulateBids(int taskId);
     void allocateTasks();
     int determineWinner(const std::vector<RobotBid>& bids, const std::set<int>& excludedRobots);
-};
+    
+    // New methods for handling robot start positions and bid calculations
+    void initializeRobotStartPositions(const std::vector<std::string>& robotNamespaces);
+    void calculateBidsBasedOnDistance(int taskId);
 
+};
 } // namespace full_coverage_path_planner
 
 #endif // TASK_ALLOCATOR_H
