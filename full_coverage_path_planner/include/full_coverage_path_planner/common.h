@@ -26,6 +26,12 @@ struct Node {
     Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr),back(nullptr),up(nullptr) ,down(nullptr){}
 };
 
+static std::vector<std::vector<Node*>> narrow_area_points_vertical;
+static std::vector<std::vector<Node*>> narrow_area_points_horizontal;
+static int nRows = 0;
+static int nCols = 0;
+static std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
+
 typedef struct
 {
   int x, y;
@@ -237,4 +243,5 @@ void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<
 size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph);
 
 void create_explored_grid_node(std::vector<std::vector<bool>> matrix, std::vector<Node*> boundary,std::vector<std::vector<bool>>& explored_free_area_grid);
+bool findNodeByCoordinatesHr(std::vector<std::vector<Node*>> narrow_area_points_horizontal, int searchX, int searchY);
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

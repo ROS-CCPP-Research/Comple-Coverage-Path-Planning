@@ -335,8 +335,8 @@ bool inValidMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::
                std::vector<std::vector<bool>> narrow_area_grid_points)
 {
     return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
-           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
-           && narrow_area_grid_points[y2][x2] == 1);  // the path node is unvisited
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen)
+           && narrow_area_grid_points[y2][x2] == 1;  // the path node is unvisited
     // ??????????? meaning, not visited, and no obstacles.
 }
 
@@ -345,10 +345,29 @@ bool validMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::ve
                std::vector<std::vector<bool>> narrow_area_grid_points)
 {
     return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
-           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
-           && narrow_area_grid_points[y2][x2] == 0);  // the path node is unvisited
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen)
+           && narrow_area_grid_points[y2][x2] == 0;  // the path node is unvisited
     // ??????????? meaning, not visited, and no obstacles.
 }
+
+bool findNodeByCoordinatesHr(std::vector<std::vector<Node*>> narrow_area_points_horizontal, int searchX, int searchY) {
+    // Iterate through each sub-vector
+    std::cout<<narrow_area_points_horizontal.size()<<std::endl;
+    for (const auto& row : narrow_area_points_horizontal) {
+        // Iterate through each Node* in the sub-vector
+        std::cout<<"Node row : "<<row.front()->x<<", "<<row.front()->y<<std::endl;
+        for (const auto& node : row) {
+          std::cout<<"Node : "<<node->x<<", "<<node->y;
+            // Check if the node's coordinates match the search criteria
+            if (node != nullptr && (node->x == searchX && node->y == searchY)) {
+                std::cout<<"Node is hori : "<<searchX<<", "<<searchY<<std::endl;
+                return true; // Found the node with matching coordinates
+            }
+        }
+    }
+    return false; // Node with specified coordinates not found
+}
+
 
 void addNodeToList(int x2, int y2, std::list<gridNode_t>& pathNodes, std::vector<std::vector<bool>>& visited)
 {
@@ -459,7 +478,10 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
     Node* startNode = new Node(x, y);
     graph[x][y] = startNode;
 
-    root = startNode;
+    if(root == nullptr){
+      root = startNode;
+    }
+    
     
     
 
@@ -540,7 +562,9 @@ void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
     Node* startNode = new Node(x, y);
     graph[x][y] = startNode;
 
-    root = startNode;
+    if(root == nullptr){
+      root = startNode;
+    }
     
     
 

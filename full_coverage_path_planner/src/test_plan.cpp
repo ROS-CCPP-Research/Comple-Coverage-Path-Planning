@@ -17,8 +17,7 @@
 #include <opencv2/core.hpp>
 #include <queue>
 
-void preOrderTraversalHorizontal(Node* node, std::vector<std::vector<Node*>>& narrow_area_points, 
-                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+void preOrderTraversalHorizontal(Node* node,
                         Node*& current_col,
                         std::vector<Node*>& current_root,
                         int max_row_count,
@@ -27,10 +26,10 @@ void preOrderTraversalHorizontal(Node* node, std::vector<std::vector<Node*>>& na
                         ) {
     if (!node) return;
     
-    preOrderTraversalHorizontal(node->left,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+    preOrderTraversalHorizontal(node->left,current_col,current_root,max_row_count,temp_odd_root,col_count);
     
     
-    preOrderTraversalHorizontal(node->right,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+    preOrderTraversalHorizontal(node->right,current_col,current_root,max_row_count,temp_odd_root,col_count);
 
     if(current_col == nullptr){
         current_col = node;
@@ -61,7 +60,7 @@ void preOrderTraversalHorizontal(Node* node, std::vector<std::vector<Node*>>& na
 
             if(col_count>=3){
 
-                narrow_area_points.push_back(temp_odd_root);
+                narrow_area_points_horizontal.push_back(temp_odd_root);
 
                 for (const auto& node_ptr : temp_odd_root) {
                     narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
@@ -97,8 +96,7 @@ void preOrderTraversalHorizontal(Node* node, std::vector<std::vector<Node*>>& na
 }
 
 
-void preOrderTraversalVertical(Node* node, std::vector<std::vector<Node*>>& narrow_area_points, 
-                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+void preOrderTraversalVertical(Node* node,
                         Node*& current_col,
                         std::vector<Node*>& current_root,
                         int max_row_count,
@@ -107,10 +105,10 @@ void preOrderTraversalVertical(Node* node, std::vector<std::vector<Node*>>& narr
                         ) {
     if (!node) return;
     
-    preOrderTraversalVertical(node->right,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+    preOrderTraversalVertical(node->right,current_col,current_root,max_row_count,temp_odd_root,col_count);
     
     
-    preOrderTraversalVertical(node->left,narrow_area_points,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+    preOrderTraversalVertical(node->left,current_col,current_root,max_row_count,temp_odd_root,col_count);
 
     if(current_col == nullptr){
         current_col = node;
@@ -140,7 +138,7 @@ void preOrderTraversalVertical(Node* node, std::vector<std::vector<Node*>>& narr
             // std::cout<<"narrow point count : "<<temp_odd_root.size()<<std::endl;;
 
             if(col_count>=3){
-                narrow_area_points.push_back(temp_odd_root);
+                narrow_area_points_vertical.push_back(temp_odd_root);
                 for (const auto& node_ptr : temp_odd_root) {
                     narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
                 }
@@ -247,41 +245,41 @@ int main(int argc, char** argv)
 
 
 
-    // std::vector<std::vector<bool>> test_matrix = {
-    //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
-    //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-    // };
+// std::vector<std::vector<bool>> test_matrix = {
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+//     {1, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+//     {1, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+//     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+// };
 
-std::vector<std::vector<bool>> test_matrix = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-};
+// std::vector<std::vector<bool>> test_matrix = {
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+// };
 
 // std::vector<std::vector<bool>> test_matrix = {
 //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -292,7 +290,7 @@ std::vector<std::vector<bool>> test_matrix = {
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1},
@@ -309,76 +307,73 @@ std::vector<std::vector<bool>> test_matrix = {
 
 
 // std::vector<std::vector<bool>> test_matrix = {
-    //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-    // };
+//         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+//         {1, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+//         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+//     };
 
 // std::vector<std::vector<bool>> test_matrix = {
 //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
 //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 // };
 
-// std::vector<std::vector<bool>> test_matrix = {
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-// };
+std::vector<std::vector<bool>> test_matrix = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
 
 
 
-    int nRows = test_matrix.size();
-    int nCols = test_matrix[0].size();
+    nRows = test_matrix.size();
+    nCols = test_matrix[0].size();
+
+    narrow_area_grid_points = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, true));
 
     int max_row = 0;
     int max_col = 0;
-
-    std::vector<std::vector<Node*>> narrow_area_points_vertical;
-    std::vector<std::vector<Node*>> narrow_area_points_horizontal;
-    std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
-    // std::vector<std::vector<bool>> narrow_area_grid_points_v(nRows_v, std::vector<bool>(nCols_v, true));
 
     Node* current_col = nullptr;
     // Node* currentStart = nullptr;
@@ -399,6 +394,8 @@ std::vector<std::vector<bool>> test_matrix = {
     for (int i = 0; i < nRows; ++i) {
         for (int j = 0; j < nCols; ++j) {
             if (test_matrix[i][j] == 0 && !test_area_visited_h[i][j]) {
+
+                std::cout<<"Found pont h : "<<"("<<i<<", "<<j<<")"<<std::endl;
                 bfs(i, j,nRows,nCols,test_matrix, test_area_visited_h,test_area_graph_h,root_h);
             }
         }
@@ -407,6 +404,7 @@ std::vector<std::vector<bool>> test_matrix = {
     for (int i = 0; i < nRows; ++i) {
         for (int j = 0; j < nCols; ++j) {
             if (test_matrix[i][j] == 0 && !test_area_visited_v[i][j]) {
+                std::cout<<"Found pont v : "<<"("<<i<<", "<<j<<")"<<std::endl;
                 bfs_vertical(i, j,nRows,nCols,test_matrix,test_area_visited_v,test_area_graph_v,root_v);
             }
         }
@@ -416,8 +414,9 @@ std::vector<std::vector<bool>> test_matrix = {
 
     if (root_h != nullptr) {
         int max_row_count = max_row - root_h->x;
-        preOrderTraversalHorizontal(root_h,narrow_area_points_horizontal,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+        preOrderTraversalHorizontal(root_h,current_col,current_root,max_row_count,temp_odd_root,col_count);
     }
+    
     else {
         std::cout << "No column root node found." << std::endl;
     }
@@ -429,8 +428,9 @@ std::vector<std::vector<bool>> test_matrix = {
         current_root.clear();
         temp_odd_root.clear();
         col_count = 0;
-        preOrderTraversalVertical(root_v,narrow_area_points_vertical,narrow_area_grid_points,current_col,current_root,max_row_count,temp_odd_root,col_count);
+        preOrderTraversalVertical(root_v,current_col,current_root,max_row_count,temp_odd_root,col_count);
     }
+    
     else {
         std::cout << "No column root node found." << std::endl;
     }
@@ -459,18 +459,19 @@ std::vector<std::vector<bool>> test_matrix = {
     Point_t sub_region_Scaled;
     int multiple_pass_counter, visited_counter;
 
-    sub_region_Scaled.x = root_h->x;
-    sub_region_Scaled.y = root_h->y;
+    sub_region_Scaled.x = root_v->x;
+    sub_region_Scaled.y = root_v->y;
 
-    sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(test_matrix, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points);
+
+    sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(test_matrix, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points,narrow_area_points_horizontal,narrow_area_points_vertical);
     // sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(test_matrix, sub_region_Scaled, multiple_pass_counter, visited_counter);
     
-    std::cout<<std::endl;
-    std::cout<<std::endl;
+    // std::cout<<std::endl;
+    // std::cout<<std::endl;
 
-    for (const auto& point : sub_region_path) {
-        std::cout<<"("<<point.x<<", "<<point.y<<")";
-    }
+    // for (const auto& point : sub_region_path) {
+    //     std::cout<<"("<<point.x<<", "<<point.y<<")";
+    // }
 
     convertToOccupancyGrid(test_matrix, occupancyGridMsg);
     // occupancyGridPub.publish(occupancyGridMsg);
