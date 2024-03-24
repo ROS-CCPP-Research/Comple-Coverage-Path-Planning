@@ -26,28 +26,11 @@ struct Node {
     Node(int x, int y) : x(x), y(y), left(nullptr), right(nullptr),back(nullptr),up(nullptr) ,down(nullptr){}
 };
 
-static std::vector<std::vector<Node*>> narrow_area_points_vertical;
-static std::vector<std::vector<Node*>> narrow_area_points_horizontal;
-static int nRows = 0;
-static int nCols = 0;
-static std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
-
 typedef struct
 {
   int x, y;
 }
 Point_t;
-
-// Define comparison operator outside the structure definition
-// bool operator<(const Point_t& lhs, const Point_t& rhs) {
-//     // Compare based on x and y values
-//     return (lhs.x < rhs.x) || (lhs.x == rhs.x && lhs.y < rhs.y);
-// }
-
-// Define output stream operator for Point_t
-inline std::ostream &operator<<(std::ostream &os, Point_t &p) {
-    return os << "(" << p.x << ", " << p.y << ")";
-}
 
 typedef struct
 {
@@ -64,6 +47,45 @@ typedef struct
   int he;
 }
 gridNode_t;
+
+
+static std::vector<std::vector<Node*>> narrow_area_points_vertical;
+static std::vector<std::vector<Node*>> narrow_area_points_horizontal;
+static int nRows = 0;
+static int nCols = 0;
+
+static std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
+
+static std::vector<std::vector<std::vector<bool>>> all_sub_regions;
+static std::vector<std::vector<std::vector<Node*>>> all_narrow_area_points_vertical;
+static std::vector<std::vector<std::vector<Node*>>> all_narrow_area_points_horizontal;
+static std::vector<std::list<Point_t>> all_sub_paths_array;
+
+static Node* current_col = nullptr;
+static std::vector<Node*> current_root;
+static std::vector<Node*> temp_odd_root;
+static int col_count;
+
+static std::vector<std::vector<bool>> test_area_visited_h(nRows, std::vector<bool>(nCols, false));
+static std::vector<std::vector<bool>> test_area_visited_v(nRows, std::vector<bool>(nCols, false));
+static std::vector<std::vector<Node*>> test_area_graph_h(nRows, std::vector<Node*>(nCols, nullptr));
+static std::vector<std::vector<Node*>> test_area_graph_v(nRows, std::vector<Node*>(nCols, nullptr));
+
+static Node* root_h = nullptr;
+static Node* root_v = nullptr;
+
+
+// Define comparison operator outside the structure definition
+// bool operator<(const Point_t& lhs, const Point_t& rhs) {
+//     // Compare based on x and y values
+//     return (lhs.x < rhs.x) || (lhs.x == rhs.x && lhs.y < rhs.y);
+// }
+
+// Define output stream operator for Point_t
+inline std::ostream &operator<<(std::ostream &os, Point_t &p) {
+    return os << "(" << p.x << ", " << p.y << ")";
+}
+
 
 inline std::ostream &operator << (std::ostream &os, gridNode_t &g)
 {
@@ -240,8 +262,27 @@ void preOrder(  Node* root,
 
 void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<std::vector<Node*>>& partitions,std::vector<Node*>& partition_point);
 
-size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph);
 
 void create_explored_grid_node(std::vector<std::vector<bool>> matrix, std::vector<Node*> boundary,std::vector<std::vector<bool>>& explored_free_area_grid);
-bool findNodeByCoordinatesHr(std::vector<std::vector<Node*>> narrow_area_points_horizontal, int searchX, int searchY);
+
+void preOrderTraversalHorizontal(Node* node,
+                        Node*& current_col,
+                        std::vector<Node*>& current_root,
+                        int max_row_count,
+                        std::vector<Node*>& temp_odd_root,
+                        int& col_count,
+                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+                        std::vector<std::vector<Node*>>& narrow_area_points_horizontal
+                        );
+
+void preOrderTraversalVertical(Node* node,
+                        Node*& current_col,
+                        std::vector<Node*>& current_root,
+                        int max_row_count,
+                        std::vector<Node*>& temp_odd_root,
+                        int& col_count,
+                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+                        std::vector<std::vector<Node*>>& narrow_area_points_vertical
+                        );
+
 #endif  // FULL_COVERAGE_PATH_PLANNER_COMMON_H

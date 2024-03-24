@@ -17,178 +17,6 @@
 #include <opencv2/core.hpp>
 #include <queue>
 
-void preOrderTraversalHorizontal(Node* node,
-                        Node*& current_col,
-                        std::vector<Node*>& current_root,
-                        int max_row_count,
-                        std::vector<Node*>& temp_odd_root,
-                        int& col_count
-                        ) {
-    if (!node) return;
-    
-    preOrderTraversalHorizontal(node->left,current_col,current_root,max_row_count,temp_odd_root,col_count);
-    
-    
-    preOrderTraversalHorizontal(node->right,current_col,current_root,max_row_count,temp_odd_root,col_count);
-
-    if(current_col == nullptr){
-        current_col = node;
-    }
-
-    if(current_col->x !=  node->x){
-        // std::cout<<"new col"<<std::endl;
-        // std::cout<<"col size : "<<current_root.size()<<std::endl;
-        if(current_root.size() %2 != 0 && current_root.front()->y == node->y){
-
-            temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
-            col_count++;
-            current_root.clear();
-
-            if(narrow_area_grid_points[node->x][node->y] == 1){
-                current_root.push_back(node);
-            }
-            
-
-        }
-        else{
-            // std::cout<<"Push back "<<std::endl;
-            if(!temp_odd_root.empty() && current_root.back()->y == temp_odd_root.back()->y){
-                temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
-                col_count++;
-            }
-            // std::cout<<"narrow point count : "<<temp_odd_root.size()<<std::endl;;
-
-            if(col_count>=3){
-
-                narrow_area_points_horizontal.push_back(temp_odd_root);
-
-                for (const auto& node_ptr : temp_odd_root) {
-                    narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
-                }
-
-                temp_odd_root.clear();
-                col_count = 0;
-                current_root.clear();
-
-                if(narrow_area_grid_points[node->x][node->y] == 1){
-                    current_root.push_back(node);
-                }
-            }
-            else{
-
-                temp_odd_root.clear();
-                col_count = 0;
-                current_root.clear();
-
-                if(narrow_area_grid_points[node->x][node->y] == 1){
-                    current_root.push_back(node);
-                }
-            }
-        }
-    }
-    else{
-        if(narrow_area_grid_points[node->x][node->y] == 1){
-                current_root.push_back(node);
-            }
-    }
-    // std::cout << "(" << node->x << ", " << node->y << ") ";
-    current_col = node;
-}
-
-
-void preOrderTraversalVertical(Node* node,
-                        Node*& current_col,
-                        std::vector<Node*>& current_root,
-                        int max_row_count,
-                        std::vector<Node*>& temp_odd_root,
-                        int& col_count
-                        ) {
-    if (!node) return;
-    
-    preOrderTraversalVertical(node->right,current_col,current_root,max_row_count,temp_odd_root,col_count);
-    
-    
-    preOrderTraversalVertical(node->left,current_col,current_root,max_row_count,temp_odd_root,col_count);
-
-    if(current_col == nullptr){
-        current_col = node;
-    }
-
-    if(current_col->y !=  node->y){
-        // std::cout<<"new col"<<std::endl;
-        // std::cout<<"col size : "<<current_root.size()<<std::endl;
-        if(current_root.size() %2 != 0 && current_root.front()->x == node->x){
-
-            temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
-            col_count++;
-            current_root.clear();
-            if(narrow_area_grid_points[node->x][node->y] == 1){
-                current_root.push_back(node);
-            }
-            
-
-        }
-        else{
-            // std::cout<<"Push back "<<std::endl;
-            if(!temp_odd_root.empty() && current_root.back()->x == temp_odd_root.back()->x){
-                temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
-                col_count++;
-            }
-
-            // std::cout<<"narrow point count : "<<temp_odd_root.size()<<std::endl;;
-
-            if(col_count>=3){
-                narrow_area_points_vertical.push_back(temp_odd_root);
-                for (const auto& node_ptr : temp_odd_root) {
-                    narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
-                }
-                temp_odd_root.clear();
-                col_count = 0;
-                current_root.clear();
-
-                if(narrow_area_grid_points[node->x][node->y] == 1){
-                    current_root.push_back(node);
-                }
-            }
-            else{
-                temp_odd_root.clear();
-                col_count = 0;
-                current_root.clear();
-                if(narrow_area_grid_points[node->x][node->y] == 1){
-                    current_root.push_back(node);
-                }
-            }
-        }
-    }
-    else{
-        if(narrow_area_grid_points[node->x][node->y] == 1){
-                    current_root.push_back(node);
-           }
-    }
-    // std::cout << "(" << node->x << ", " << node->y << ") ";
-    current_col = node;
-}
-
-void preOrderTraversal_h(Node* root){
-
-    if(!root) return;
-
-    preOrderTraversal_h(root->left);
-    preOrderTraversal_h(root->right);
-    std::cout << "(" << root->x << ", " << root->y << ") ";
-    
-}
-
-void preOrderTraversal_v(Node* root){
-
-    if(!root) return;
-
-    preOrderTraversal_v(root->right);
-    preOrderTraversal_v(root->left);
-    std::cout << "(" << root->x << ", " << root->y << ") ";
-    
-}
-
 
 void convertToOccupancyGrid(const std::vector<std::vector<bool>>& matrix, nav_msgs::OccupancyGrid& grid) {
     grid.header.frame_id = "map";
@@ -260,24 +88,24 @@ int main(int argc, char** argv)
 
 // std::vector<std::vector<bool>> test_matrix = {
 //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
 //     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-//     {1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
 //     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 // };
 
@@ -319,77 +147,84 @@ int main(int argc, char** argv)
 //         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 //     };
 
-// std::vector<std::vector<bool>> test_matrix = {
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
-//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1},
-//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-// };
-
 std::vector<std::vector<bool>> test_matrix = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
+
+// std::vector<std::vector<bool>> test_matrix = {
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+//     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+// };
+
 
 
 
     nRows = test_matrix.size();
     nCols = test_matrix[0].size();
 
+    narrow_area_grid_points.clear();
+    narrow_area_points_vertical.clear();
+    narrow_area_points_horizontal.clear();
     narrow_area_grid_points = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, true));
 
     int max_row = 0;
     int max_col = 0;
 
-    Node* current_col = nullptr;
-    // Node* currentStart = nullptr;
-    // int root_lenghts = 0;
-    std::vector<Node*> current_root;
-    std::vector<Node*> temp_odd_root;
-    int col_count = 0;
+    current_col = nullptr;
+    current_root.clear();
+    temp_odd_root.clear();
+    col_count = 0;
 
 
-    std::vector<std::vector<bool>> test_area_visited_h(nRows, std::vector<bool>(nCols, false));
-    std::vector<std::vector<bool>> test_area_visited_v(nRows, std::vector<bool>(nCols, false));
-    std::vector<std::vector<Node*>> test_area_graph_h(nRows, std::vector<Node*>(nCols, nullptr));
-    std::vector<std::vector<Node*>> test_area_graph_v(nRows, std::vector<Node*>(nCols, nullptr));
+    test_area_visited_h.clear();
+    test_area_visited_v.clear();
+    test_area_graph_h.clear();
+    test_area_graph_v.clear();
 
-    Node* root_h = nullptr;
-    Node* root_v = nullptr;
+    test_area_visited_h = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));
+    test_area_visited_v = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));
+    test_area_graph_h = std::vector<std::vector<Node*>>(nRows, std::vector<Node*>(nCols, nullptr));
+    test_area_graph_v = std::vector<std::vector<Node*>>(nRows, std::vector<Node*>(nCols, nullptr));
+
+    root_h = nullptr;
+    root_v = nullptr;
 
     for (int i = 0; i < nRows; ++i) {
         for (int j = 0; j < nCols; ++j) {
@@ -414,7 +249,7 @@ std::vector<std::vector<bool>> test_matrix = {
 
     if (root_h != nullptr) {
         int max_row_count = max_row - root_h->x;
-        preOrderTraversalHorizontal(root_h,current_col,current_root,max_row_count,temp_odd_root,col_count);
+        preOrderTraversalHorizontal(root_h,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_horizontal);
     }
     
     else {
@@ -428,7 +263,7 @@ std::vector<std::vector<bool>> test_matrix = {
         current_root.clear();
         temp_odd_root.clear();
         col_count = 0;
-        preOrderTraversalVertical(root_v,current_col,current_root,max_row_count,temp_odd_root,col_count);
+        preOrderTraversalVertical(root_v,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_vertical);
     }
     
     else {
@@ -464,20 +299,10 @@ std::vector<std::vector<bool>> test_matrix = {
 
 
     sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(test_matrix, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points,narrow_area_points_horizontal,narrow_area_points_vertical);
-    // sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(test_matrix, sub_region_Scaled, multiple_pass_counter, visited_counter);
-    
-    // std::cout<<std::endl;
-    // std::cout<<std::endl;
-
-    // for (const auto& point : sub_region_path) {
-    //     std::cout<<"("<<point.x<<", "<<point.y<<")";
-    // }
 
     convertToOccupancyGrid(test_matrix, occupancyGridMsg);
-    // occupancyGridPub.publish(occupancyGridMsg);
 
     nav_msgs::Path pathMsg = convertToPath(sub_region_path,occupancyGridMsg);
-    // pathPub.publish(pathMsg);
 
     ros::Rate loop_rate(10); // 10 Hz
     while (ros::ok()) {
