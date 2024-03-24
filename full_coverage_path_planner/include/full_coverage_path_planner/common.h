@@ -55,6 +55,7 @@ static int nRows = 0;
 static int nCols = 0;
 
 static std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
+static std::vector<std::vector<bool>> explored_free_area_grid (nRows, std::vector<bool>(nCols, false)); 
 
 static std::vector<std::vector<std::vector<bool>>> all_sub_regions;
 static std::vector<std::vector<std::vector<Node*>>> all_narrow_area_points_vertical;

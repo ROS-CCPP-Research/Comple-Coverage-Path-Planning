@@ -1,0 +1,10 @@
+<launch>
+
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch">
+    </include>
+
+    <node pkg="full_coverage_path_planner" name="sensor_scan_node" type="sensor_scan_node" clear_params="true" output="screen">
+    </node>
+
+
+</launch>

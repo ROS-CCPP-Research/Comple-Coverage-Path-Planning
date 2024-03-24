@@ -59,6 +59,7 @@ add_library(${PROJECT_NAME}
         src/${PROJECT_NAME}.cpp
         src/spiral_stc.cpp
         src/main.cpp
+        src/lidar_sensor.cpp
         )
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}
@@ -72,6 +73,10 @@ add_dependencies(path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 add_executable(test_path_planner src/test_plan.cpp)
 target_link_libraries(test_path_planner ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
 add_dependencies(test_path_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(sensor_scan_node src/robot_lidar_node.cpp)
+target_link_libraries(sensor_scan_node ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
+add_dependencies(sensor_scan_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(coverage_progress_visualizer_node src/coverage_progress_visualizer_node.cpp)
 target_link_libraries(coverage_progress_visualizer_node ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBRARIES})
@@ -106,7 +111,7 @@ catkin_install_python(
 )
 
 if (CATKIN_ENABLE_TESTING)
-    catkin_add_gtest(test_common test/src/test_common.cpp test/src/util.cpp src/common.cpp)
+    catkin_add_gtest(test_common test/src/test_common.cpp test/src/util.cpp src/common.cpp src/lidar_sensor.cpp)
 
     catkin_add_gtest(test_spiral_stc test/src/test_spiral_stc.cpp test/src/util.cpp src/spiral_stc.cpp src/common.cpp src/${PROJECT_NAME}.cpp)
     add_dependencies(test_spiral_stc ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
