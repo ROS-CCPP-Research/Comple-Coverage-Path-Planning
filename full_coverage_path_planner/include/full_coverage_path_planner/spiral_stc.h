@@ -44,9 +44,11 @@ public:
    * @param visited all the nodes visited by the spiral
    * @return list of nodes that form the spiral
    */
-  static std::list<gridNode_t> new_spiral(std::vector<std::vector<bool> > const &grid, std::list<gridNode_t> &init,
-                                      std::vector<std::vector<bool> > &visited,
-                                      std::vector<std::vector<bool>> &narrow_area_grid_points);
+  static std::list<gridNode_t> new_spiral(std::vector<std::vector<bool> > const& grid, std::list<gridNode_t>& init,
+                                        std::vector<std::vector<bool> >& visited,
+                                        std::vector<std::vector<bool>> const& narrow_area_grid_points,
+                                        std::vector<std::vector<Node*>> narrow_area_points_horizontal,
+                                        std::vector<std::vector<Node*>> narrow_area_points_vertical);
 
   /**
    * Perform Spiral-STC (Spanning Tree Coverage) coverage path planning.
@@ -69,11 +71,13 @@ public:
    * @param init
    * @return
    */
-  static std::list<Point_t> new_spiral_stc(std::vector<std::vector<bool> > const &grid,
-                                        Point_t &init,
-                                        int &multiple_pass_counter,
-                                        int &visited_counter,
-                                        std::vector<std::vector<bool>> &narrow_area_grid_points);
+  static std::list<Point_t> new_spiral_stc(std::vector<std::vector<bool> > const& grid,
+                                          Point_t& init,
+                                          int &multiple_pass_counter,
+                                          int &visited_counter,
+                                          std::vector<std::vector<bool>> const& narrow_area_grid_points,
+                                          std::vector<std::vector<Node*>> narrow_area_points_horizontal,
+                                          std::vector<std::vector<Node*>> narrow_area_points_vertical);
 
   /**
      * Find a path that does the boustrophedon pattern starting from init until a dead end is reached in the grid

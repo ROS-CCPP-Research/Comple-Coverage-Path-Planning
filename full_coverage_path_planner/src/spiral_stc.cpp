@@ -250,6 +250,7 @@ std::list<gridNode_t> SpiralSTC::boustrophedon(std::vector<std::vector<bool>> co
                 robot_dir = south;
                 dy = -1;
             }
+
             else if (robot_dir == south)
             {
                 robot_dir = north;
@@ -612,274 +613,11 @@ std::list<Point_t> SpiralSTC::spiral_stc(std::vector<std::vector<bool> > const& 
 }
 
 
-// std::list<gridNode_t> SpiralSTC::new_spiral(std::vector<std::vector<bool> > const& grid, std::list<gridNode_t>& init,
-//                                         std::vector<std::vector<bool> >& visited,
-//                                         std::vector<std::vector<bool>> &narrow_area_grid_points)
-// {
-//   int dx, dy, dx_prev, x2, y2, i, nRows = grid.size(), nCols = grid[0].size();
-
-//   // Spiral filling of the open space
-//   // Copy incoming list to 'end'
-//   std::list<gridNode_t> pathNodes(init);
-
-//   // Create iterator for gridNode_t list and let it point to the last element of end
-//   std::list<gridNode_t>::iterator it = --(pathNodes.end());
-
-//   if (pathNodes.size() > 1)  // if list is length 1, keep iterator at end
-//     it--;                    // Let iterator point to second to last element
-
-//   gridNode_t prev = *(it);
-  
-//   bool done = false;
-//   while (!done)
-//   {
-//     if (it != pathNodes.begin())
-//     {
-//       // turn ccw
-//       dx = pathNodes.back().pos.x - prev.pos.x;
-//       dy = pathNodes.back().pos.y - prev.pos.y;
-//       dx_prev = dx;
-//       dx = -dy;
-//       dy = dx_prev;
-//     }
-//     else
-//     {
-//       // Initialize spiral direction towards y-axis
-//       dx = 0;
-//       dy = 1;
-//     }
-//     done = true;
-
-//     for (int i = 0; i < 4; ++i)
-//     {
-//       x2 = pathNodes.back().pos.x + dx;
-//       y2 = pathNodes.back().pos.y + dy;
-//       if (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)
-//       {
-//         if (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen && narrow_area_grid_points[x2][y2])
-//         {
-//           Point_t new_point = { x2, y2 };
-//           gridNode_t new_node =
-//           {
-//             new_point,  // Point: x,y
-//             0,          // Cost
-//             0,          // Heuristic
-//           };
-//           prev = pathNodes.back();
-//           pathNodes.push_back(new_node);
-//           it = --(pathNodes.end());
-//           visited[y2][x2] = eNodeVisited;  // Close node
-//           done = false;
-//           break;
-
-//           dx_prev = dx;
-//           dx = dy;
-//           dy = -dx_prev;
-//         }
-//         else if(grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen && !narrow_area_grid_points[x2][y2])
-//         {
-//           bool b_done = false;
-//           while (!b_done)
-//           {
-
-//             bool hitWall = false;
-//             while (!hitWall)
-//             {
-//                 if(narrow_area_grid_points[y2-dy][x2-dx]){
-//                   x2 += dx;
-//                   y2 += dy;
-//                 }
-                
-//                 if (!validMoveInNarrow(x2, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                 {
-//                     hitWall = true;
-//                     // x2 = pathNodes.back().pos.x;
-//                     // y2 = pathNodes.back().pos.y;
-//                     break;
-//                 }
-//                 if (!hitWall)
-//                 {
-//                     Point_t new_point = { x2, y2 };
-//                     gridNode_t new_node =
-//                     {
-//                       new_point,  // Point: x,y
-//                       0,          // Cost
-//                       0,          // Heuristic
-//                     };
-//                     prev = pathNodes.back();
-//                     pathNodes.push_back(new_node);
-//                     it = --(pathNodes.end());
-//                     visited[y2][x2] = eNodeVisited;  // Close node
-//                 }
-//             }
-
-//             if(!narrow_area_grid_points[x2][y2]){
-
-//                 // check left and right after hitting wall, then change direction
-//               if ((dx == 0 && dy == +1) || (dx == 0 && dy == -1)){
-
-//                  x2 = pathNodes.back().pos.x;
-//                  y2 = pathNodes.back().pos.y;
-
-//                 if (!validMoveInNarrow(x2 + 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points) &&
-//                     !validMoveInNarrow(x2 - 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                 {
-//                     // dead end, exit
-//                     done = true;
-//                     break;
-//                 }
-//                 else if (!validMoveInNarrow(x2 + 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                 {
-//                     // east is occupied, travel towards west
-//                     x2--;
-//                     pattern_dir_ = west;
-//                 }
-//                 else if (!validMoveInNarrow(x2 - 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                 {
-//                     // west is occupied, travel towards east
-//                     x2++;
-//                     pattern_dir_ = east;
-//                 }
-//                   else
-//                   {
-//                       // both sides are opened. If you don't have a preferred turn direction, travel towards most open
-//                       // direction
-//                       if (!(pattern_dir_ == east || pattern_dir_ == west))
-//                       {
-//                           if(!narrow_area_grid_points[y2+1][x2]){
-//                             pattern_dir_ = east;
-//                           }
-//                           else{
-//                             pattern_dir_ = west;
-//                           }
-//                       }
-
-//                       if (pattern_dir_ = east)
-//                       {
-//                           x2++;
-//                       }
-//                       else if (pattern_dir_ = west)
-//                       {
-//                           x2--;
-//                       }
-//                   }
-//                   Point_t new_point = { x2, y2 };
-//                     gridNode_t new_node =
-//                     {
-//                       new_point,  // Point: x,y
-//                       0,          // Cost
-//                       0,          // Heuristic
-//                     };
-//                     prev = pathNodes.back();
-//                     pathNodes.push_back(new_node);
-//                     it = --(pathNodes.end());
-//                     visited[y2][x2] = eNodeVisited;  // Close node
-
-//                     if (dx == 0 && dy == +1)
-//                     {
-//                         dy = -1;
-//                     }
-//                     else if (dx == 0 && dy == -1)
-//                     {
-//                         dy = 1;
-//                     }
-//                 }
-
-//               else if((dx == +1 && dy == 0) || (dx == -1 && dy == 0))
-//                 {
-
-//                   x2 = pathNodes.back().pos.x;
-//                   y2 = pathNodes.back().pos.y;
-
-//                   if (!validMoveInNarrow(x2, y2+1, nCols, nRows, grid, visited,narrow_area_grid_points) &&
-//                       !validMoveInNarrow(x2, y2-1, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                   {
-//                       // dead end, exit
-//                       done = true;
-//                       break;
-//                   }
-//                   else if (!validMoveInNarrow(x2, y2+1, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                   {
-//                       // east is occupied, travel towards west
-//                       y2--;
-//                       pattern_dir_ = south;
-//                   }
-//                   else if (!validMoveInNarrow(x2, y2-1, nCols, nRows, grid, visited,narrow_area_grid_points))
-//                   {
-//                       // west is occupied, travel towards east
-//                       y2++;
-//                       pattern_dir_ = north;
-//                   }
-//                     else
-//                     {
-//                         // both sides are opened. If you don't have a preferred turn direction, travel towards most open
-//                         // direction
-//                         if (!(pattern_dir_ == north || pattern_dir_ == south))
-//                         {
-//                             if(!narrow_area_grid_points[y2][x2+1]){
-//                               pattern_dir_ = north;
-//                             }
-//                             else{
-//                               pattern_dir_ = south;
-//                             }
-//                         }
-
-//                         if (pattern_dir_ = north)
-//                         {
-//                             y2++;
-//                         }
-//                         else if (pattern_dir_ = south)
-//                         {
-//                             y2--;
-//                         }
-//                     }
-//                     Point_t new_point = { x2, y2 };
-//                       gridNode_t new_node =
-//                       {
-//                         new_point,  // Point: x,y
-//                         0,          // Cost
-//                         0,          // Heuristic
-//                       };
-//                       prev = pathNodes.back();
-//                       pathNodes.push_back(new_node);
-//                       it = --(pathNodes.end());
-//                       visited[y2][x2] = eNodeVisited;  // Close node
-
-//                       if (dx == +1 && dy == 0)
-//                       {
-//                           dx = -1;
-//                       }
-//                       else if (dx == -1 && dy == 0)
-//                       {
-//                           dx = 1;
-//                       }
-
-//                 }
-//             }
-//             else{
-//               dx_prev = dx;
-//               dx = dy;
-//               dy = -dx_prev;
-//               b_done = true;
-//               break;
-//             }
-//           }
-//         }
-
-//         }
-//       }
-//       // try next direction cw
-//       // dx_prev = dx;
-//       // dx = dy;
-//       // dy = -dx_prev;
-//     }
-//     return pathNodes;
-//   }
-
-
 std::list<gridNode_t> SpiralSTC::new_spiral(std::vector<std::vector<bool> > const& grid, std::list<gridNode_t>& init,
                                         std::vector<std::vector<bool> >& visited,
-                                        std::vector<std::vector<bool>> &narrow_area_grid_points)
+                                        std::vector<std::vector<bool>> const& narrow_area_grid_points,
+                                        std::vector<std::vector<Node*>> narrow_area_points_horizontal,
+                                        std::vector<std::vector<Node*>> narrow_area_points_vertical)
 {
   int dx, dy, dx_prev, x2, y2, i, nRows = grid.size(), nCols = grid[0].size();
 
@@ -921,57 +659,296 @@ std::list<gridNode_t> SpiralSTC::new_spiral(std::vector<std::vector<bool> > cons
       y2 = pathNodes.back().pos.y + dy;
       if (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)
       {
-        if (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen && narrow_area_grid_points[y2][x2])
+        if (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen)
         {
-          Point_t new_point = { x2, y2 };
-          gridNode_t new_node =
-          {
-            new_point,  // Point: x,y
-            0,          // Cost
-            0,          // Heuristic
-          };
-          prev = pathNodes.back();
-          pathNodes.push_back(new_node);
-          it = --(pathNodes.end());
-          visited[y2][x2] = eNodeVisited;  // Close node
-          done = false;
-          break;
-        }
 
-        else if(grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen && !narrow_area_grid_points[y2][x2]){
-          std::cout<<"this is narrow";
-          x2 = pathNodes.back().pos.x;
-          y2 = pathNodes.back().pos.y;
+          if(narrow_area_grid_points[y2][x2] == 1){
 
-          bool hitWall = false;
-          while(!hitWall){
-            x2 += dx;
-            y2 += dy;
-
-            if (!(x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)){
-                hitWall = true;
-                prev = pathNodes.back();
-                x2 = pathNodes.back().pos.x;
-                y2 = pathNodes.back().pos.y;
-                break;
-            }
-            if (!hitWall)
+            Point_t new_point = { x2, y2 };
+            gridNode_t new_node =
             {
-                 Point_t new_point = { x2, y2 };
-                  gridNode_t new_node =
-                  {
-                    new_point,  // Point: x,y
-                    0,          // Cost
-                    0,          // Heuristic
-                  };
-                  
-                  pathNodes.push_back(new_node);
-                  it = --(pathNodes.end());
-                  visited[y2][x2] = eNodeVisited;  // Close node
-            }
-
+              new_point,  // Point: x,y
+              0,          // Cost
+              0,          // Heuristic
+            };
+            prev = pathNodes.back();
+            pathNodes.push_back(new_node);
+            it = --(pathNodes.end());
+            visited[y2][x2] = eNodeVisited;  // Close node
+            done = false;
+            break;
 
           }
+          else if(narrow_area_grid_points[y2][x2] == 0){
+
+            Point_t new_point = { x2, y2 };
+            gridNode_t new_node =
+            {
+              new_point,  // Point: x,y
+              0,          // Cost
+              0,          // Heuristic
+            };
+            prev = pathNodes.back();
+            pathNodes.push_back(new_node);
+            it = --(pathNodes.end());
+            visited[y2][x2] = eNodeVisited;  // Close node
+
+            bool b_n_f = false;
+            std::list<Point_t> hitwall_list;
+            std::list<Point_t> point_seq_n_s;
+            std::list<Point_t> point_seq_e_w;
+            point_seq_n_s.clear();
+            point_seq_e_w.clear();
+            hitwall_list.clear();
+            while(!b_n_f)
+            {
+                bool hitWall = false;
+                if(dx == 0 && dy == 1){
+                  pattern_dir_ = south;
+                }
+                else  if(dx == 0 && dy == -1){
+                  pattern_dir_ = north;
+                }
+                else if(dx == 1 && dy == 0){
+                  pattern_dir_ = east;
+                }
+                else if(dx == -1 && dy == 0){
+                  pattern_dir_ = west;
+                }
+                while (!hitWall)
+                {
+                    x2 += dx;
+                    y2 += dy;
+                    if (!validMoveInNarrow(x2, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+
+                        Point_t new_hit_point = { x2, y2 };
+                        hitwall_list.push_back(new_hit_point);
+                        hitWall = true;
+                        prev = pathNodes.back();
+                        x2 = pathNodes.back().pos.x;
+                        y2 = pathNodes.back().pos.y;
+                        break;
+                    }
+                    if (!hitWall)
+                    {
+                        Point_t new_point = { x2, y2 };
+                        gridNode_t new_node =
+                        {
+                          new_point,  // Point: x,y
+                          0,          // Cost
+                          0,          // Heuristic
+                        };
+                        prev = pathNodes.back();
+                        pathNodes.push_back(new_node);
+                        it = --(pathNodes.end());
+                        visited[y2][x2] = eNodeVisited;  // Close node
+
+                        if(pattern_dir_ == north || pattern_dir_ == south){
+                          point_seq_n_s.push_back(new_point);
+                        }
+                        else if(pattern_dir_ == east || pattern_dir_ == west){
+                          point_seq_e_w.push_back(new_point);
+                        }
+                    }
+                }
+
+                  if((dx == 0 && dy == 1) || (dx == 0 && dy == -1)) // dir is down or up
+                  {
+                    if (!validMoveInNarrow(x2 + 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points) &&
+                        !validMoveInNarrow(x2 - 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+                        // dead end, exit
+                        std::cout << "dead end dir  : (" << dx << ", " << dy << ") " << (dx == 0 && dy == 1 ? "South" : (dx == 0 && dy == -1 ? "North" : "Unknown")) << std::endl;
+                        std::cout<<"dead end  : ("<<x2<<", "<<y2<<")"<<std::endl;
+                        b_n_f = true;
+                        break;
+                    }
+                    if (!validMoveInNarrow(x2 + 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+                        // east is occupied, travel towards west
+                        x2--;
+                        pattern_dir_ = west;
+                    }
+                    else if (!validMoveInNarrow(x2 - 1, y2, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+                        // west is occupied, travel towards east
+                        x2++;
+                        pattern_dir_ = east;
+                    }
+                    else
+                    {
+                      if (!(pattern_dir_ == east || pattern_dir_ == west)){
+                            b_n_f = true;
+                            break;
+                      }
+
+                      if (pattern_dir_ = east)
+                      {
+                          x2++;
+                      }
+                      else if (pattern_dir_ = west)
+                      {
+                          x2--;
+                      }
+                      
+                    }
+
+                    Point_t new_point = { x2, y2 };
+                    gridNode_t new_node =
+                    {
+                      new_point,  // Point: x,y
+                      0,          // Cost
+                      0,          // Heuristic
+                    };
+                    prev = pathNodes.back();
+                    pathNodes.push_back(new_node);
+                    it = --(pathNodes.end());
+                    visited[y2][x2] = eNodeVisited;
+
+                    if(pattern_dir_ == north || pattern_dir_ == south){
+                          point_seq_n_s.push_back(new_point);
+                    }
+                    else if(pattern_dir_ == east || pattern_dir_ == west){
+                      point_seq_e_w.push_back(new_point);
+                    }
+
+                    int hit_wall_list_val = 2;
+
+                    if(hitwall_list.size() == 2){
+                      if(point_seq_e_w.size() % 2 != 0){
+                        if(point_seq_e_w.size()/point_seq_n_s.size() < point_seq_n_s.size()){
+                          hit_wall_list_val  = 3;
+                          point_seq_n_s.clear();
+                          point_seq_e_w.clear();
+                        }
+                      }
+                    }
+
+                    if(hitwall_list.size() >= 2){
+
+                      if (dx == 0 && dy == 1)
+                      {
+                          dy = -1;
+                      }
+
+                      else if (dx == 0 && dy == -1)
+                      {
+                          dy = 1;
+                      }
+                    }
+                    else{
+                          dy = 0;
+                          if(pattern_dir_ == west){
+                            dx = -1;
+                          }
+                          else if(pattern_dir_ = east){
+                            dx =  1;
+                          }
+                    }
+
+                }
+
+                  else if((dx == 1 && dy == 0) || (dx == -1 && dy == 0)) // dir is right or left
+                  { 
+                    if (!validMoveInNarrow(x2, y2 + 1, nCols, nRows, grid, visited,narrow_area_grid_points) &&
+                        !validMoveInNarrow(x2, y2 - 1, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+                        // dead end, exit
+                        std::cout << "dead end dir  : (" << dx << ", " << dy << ") " << (dx == 1 && dy == 0 ? "East" : (dx == -1 && dy == 0 ? "West" : "Unknown")) << std::endl;
+                        std::cout<<"dead end  : ("<<x2<<", "<<y2<<")"<<std::endl;
+                        b_n_f = true;
+                        break;
+                    }
+                    else if (!validMoveInNarrow(x2, y2 + 1, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+                        // east is occupied, travel towards west
+                        y2--;
+                        pattern_dir_ = north;
+                    }
+                    else if (!validMoveInNarrow(x2, y2 - 1, nCols, nRows, grid, visited,narrow_area_grid_points))
+                    {
+                        // west is occupied, travel towards east
+                        y2++;
+                        pattern_dir_ = south;
+                    }
+                    else
+                    {
+                      std::cout<<"dead end pattern_dir_2222 : ("<<x2<<", "<<y2<<")"<<std::endl;
+                      if (!(pattern_dir_ == north || pattern_dir_ == south)){
+                        std::cout<<"dead end pattern_dir_2 : ("<<x2<<", "<<y2<<")"<<std::endl;
+                            b_n_f = true;
+                            break;
+                      }
+
+                      if (pattern_dir_ = south)
+                      {
+                          y2++;
+                      }
+                      else if (pattern_dir_ = north)
+                      {
+                          y2--;
+                      }
+                      
+                    }
+
+                    Point_t new_point = { x2, y2 };
+                    gridNode_t new_node =
+                    {
+                      new_point,  // Point: x,y
+                      0,          // Cost
+                      0,          // Heuristic
+                    };
+                    prev = pathNodes.back();
+                    pathNodes.push_back(new_node);
+                    it = --(pathNodes.end());
+                    visited[y2][x2] = eNodeVisited;
+
+                    if(pattern_dir_ == north || pattern_dir_ == south){
+                          point_seq_n_s.push_back(new_point);
+                    }
+                    else if(pattern_dir_ == east || pattern_dir_ == west){
+                      point_seq_e_w.push_back(new_point);
+                    }
+
+                    int hit_wall_list_val = 2;
+
+                    if(hitwall_list.size() == 2){
+                      if(point_seq_n_s.size() % 2 != 0 ){
+                        if(point_seq_n_s.size()/point_seq_e_w.size() < point_seq_e_w.size()){
+                          hit_wall_list_val  = 3;
+                          point_seq_n_s.clear();
+                          point_seq_e_w.clear();
+
+                        }
+                      }
+                    }
+                    
+                    if(hitwall_list.size() >=hit_wall_list_val){
+                        if(dx == 1 && dy == 0){
+                            dx = -1;
+                        }
+                        else if (dx == -1 && dy == 0)
+                        {
+                            dx = 1;
+                        }
+                    }
+                    else{
+                          dx = 0;
+                          if(pattern_dir_ == north){
+                            dy = -1;
+                          }
+                          else if(pattern_dir_ = south){
+                            dy =  1;
+                          }
+                    }
+
+                }
+                
+            }
+
+          }
+          
         }
       }
       // try next direction cw
@@ -988,7 +965,9 @@ std::list<Point_t> SpiralSTC::new_spiral_stc(std::vector<std::vector<bool> > con
                                           Point_t& init,
                                           int &multiple_pass_counter,
                                           int &visited_counter,
-                                          std::vector<std::vector<bool>> &narrow_area_grid_points)
+                                          std::vector<std::vector<bool>> const& narrow_area_grid_points,
+                                          std::vector<std::vector<Node*>> narrow_area_points_horizontal,
+                                          std::vector<std::vector<Node*>> narrow_area_points_vertical)
 {
   int x, y, nRows = grid.size(), nCols = grid[0].size();
   // Initial node is initially set as visited so it does not count
@@ -1017,7 +996,7 @@ std::list<Point_t> SpiralSTC::new_spiral_stc(std::vector<std::vector<bool> > con
   printGrid(grid, visited, fullPath);
 #endif
 
-  pathNodes = SpiralSTC::new_spiral(grid, pathNodes, visited,narrow_area_grid_points);                // First spiral fill
+  pathNodes = SpiralSTC::new_spiral(grid, pathNodes, visited,narrow_area_grid_points,narrow_area_points_horizontal,narrow_area_points_vertical);                // First spiral fill
   std::list<Point_t> goals = map_2_goals(visited, eNodeOpen);  // Retrieve remaining goalpoints
   // Add points to full path
   std::list<gridNode_t>::iterator it;
@@ -1074,7 +1053,7 @@ std::list<Point_t> SpiralSTC::new_spiral_stc(std::vector<std::vector<bool> > con
 #endif
 
     // Spiral fill from current position
-    pathNodes = new_spiral(grid, pathNodes, visited,narrow_area_grid_points);
+    pathNodes = new_spiral(grid, pathNodes, visited,narrow_area_grid_points,narrow_area_points_horizontal,narrow_area_points_vertical);
 
 #ifdef DEBUG_PLOT
     ROS_INFO("Visited grid updated after spiral:");

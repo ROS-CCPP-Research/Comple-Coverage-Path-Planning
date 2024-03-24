@@ -335,8 +335,8 @@ bool inValidMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::
                std::vector<std::vector<bool>> narrow_area_grid_points)
 {
     return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
-           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
-           && narrow_area_grid_points[y2][x2]);  // the path node is unvisited
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen)
+           && narrow_area_grid_points[y2][x2] == 1;  // the path node is unvisited
     // ??????????? meaning, not visited, and no obstacles.
 }
 
@@ -345,8 +345,8 @@ bool validMoveInNarrow(int x2, int y2, int nCols, int nRows, std::vector<std::ve
                std::vector<std::vector<bool>> narrow_area_grid_points)
 {
     return (x2 >= 0 && x2 < nCols && y2 >= 0 && y2 < nRows)                 // path node is within the map
-           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen
-           && !narrow_area_grid_points[y2][x2]);  // the path node is unvisited
+           && (grid[y2][x2] == eNodeOpen && visited[y2][x2] == eNodeOpen)
+           && narrow_area_grid_points[y2][x2] == 0;  // the path node is unvisited
     // ??????????? meaning, not visited, and no obstacles.
 }
 
@@ -450,7 +450,7 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
           std::vector<std::vector<Node*>>& graph,
           Node* & root) {
     
-    std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+    // std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
 
     std::queue<std::pair<int, int>> q;
     q.push({x, y});
@@ -459,7 +459,10 @@ void bfs(int x, int y,int sub_nRows, int sub_nCols,
     Node* startNode = new Node(x, y);
     graph[x][y] = startNode;
 
-    root = startNode;
+    if(root == nullptr){
+      root = startNode;
+    }
+    
     
     
 
@@ -531,7 +534,7 @@ void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
           std::vector<std::vector<Node*>>& graph,
           Node* & root) {
     
-    std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
+    // std::cout<<"Start position of grid : " << "(" << x << ", " << y << "),"<<std::endl;
 
     std::queue<std::pair<int, int>> q;
     q.push({x, y});
@@ -540,7 +543,9 @@ void bfs_vertical(int x, int y,int sub_nRows, int sub_nCols,
     Node* startNode = new Node(x, y);
     graph[x][y] = startNode;
 
-    root = startNode;
+    if(root == nullptr){
+      root = startNode;
+    }
     
     
 
@@ -839,14 +844,158 @@ void preOrderPartition(Node* node, int single_partitin_point_count, std::vector<
 
     }
 
-size_t getTotalNodeCount(const std::vector<std::vector<Node*>>& explored_area_graph) {
-    size_t count = 0;
-    for (const auto& row : explored_area_graph) {
-        for (const auto* node : row) {
-            if (node != nullptr) {
-                ++count; // Count each non-null node
+
+void preOrderTraversalHorizontal(Node* node,
+                        Node*& current_col,
+                        std::vector<Node*>& current_root,
+                        int max_row_count,
+                        std::vector<Node*>& temp_odd_root,
+                        int& col_count,
+                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+                        std::vector<std::vector<Node*>>& narrow_area_points_horizontal
+                        ) {
+    if (!node) return;
+    
+    preOrderTraversalHorizontal(node->left,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_horizontal);
+    
+    
+    preOrderTraversalHorizontal(node->right,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_horizontal);
+
+    if(current_col == nullptr){
+        current_col = node;
+    }
+
+    if(current_col->x !=  node->x){
+        // std::cout<<"new col"<<std::endl;
+        // std::cout<<"col size : "<<current_root.size()<<std::endl;
+        if(current_root.size() %2 != 0 && current_root.front()->y == node->y){
+
+            temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
+            col_count++;
+            current_root.clear();
+
+            if(narrow_area_grid_points[node->x][node->y] == 1){
+                current_root.push_back(node);
+            }
+            
+
+        }
+        else{
+            // std::cout<<"Push back "<<std::endl;
+            if(!temp_odd_root.empty() && current_root.back()->y == temp_odd_root.back()->y){
+                temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
+                col_count++;
+            }
+            // std::cout<<"narrow point count : "<<temp_odd_root.size()<<std::endl;;
+
+            if(col_count>=3){
+
+                narrow_area_points_horizontal.push_back(temp_odd_root);
+
+                for (const auto& node_ptr : temp_odd_root) {
+                    narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
+                }
+
+                temp_odd_root.clear();
+                col_count = 0;
+                current_root.clear();
+
+                if(narrow_area_grid_points[node->x][node->y] == 1){
+                    current_root.push_back(node);
+                }
+            }
+            else{
+
+                temp_odd_root.clear();
+                col_count = 0;
+                current_root.clear();
+
+                if(narrow_area_grid_points[node->x][node->y] == 1){
+                    current_root.push_back(node);
+                }
             }
         }
     }
-    return count;
+    else{
+        if(narrow_area_grid_points[node->x][node->y] == 1){
+                current_root.push_back(node);
+            }
+    }
+    // std::cout << "(" << node->x << ", " << node->y << ") ";
+    current_col = node;
+}
+
+void preOrderTraversalVertical(Node* node,
+                        Node*& current_col,
+                        std::vector<Node*>& current_root,
+                        int max_row_count,
+                        std::vector<Node*>& temp_odd_root,
+                        int& col_count,
+                        std::vector<std::vector<bool>>& narrow_area_grid_points,
+                        std::vector<std::vector<Node*>>& narrow_area_points_vertical
+                        ) {
+    if (!node) return;
+    
+    preOrderTraversalVertical(node->right,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_vertical);
+    
+    
+    preOrderTraversalVertical(node->left,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_vertical);
+
+    if(current_col == nullptr){
+        current_col = node;
+    }
+
+    if(current_col->y !=  node->y){
+        // std::cout<<"new col"<<std::endl;
+        // std::cout<<"col size : "<<current_root.size()<<std::endl;
+        if(current_root.size() %2 != 0 && current_root.front()->x == node->x){
+
+            temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
+            col_count++;
+            current_root.clear();
+            if(narrow_area_grid_points[node->x][node->y] == 1){
+                current_root.push_back(node);
+            }
+            
+
+        }
+        else{
+            // std::cout<<"Push back "<<std::endl;
+            if(!temp_odd_root.empty() && current_root.back()->x == temp_odd_root.back()->x){
+                temp_odd_root.insert(temp_odd_root.end(),current_root.begin(),current_root.end());
+                col_count++;
+            }
+
+            // std::cout<<"narrow point count : "<<temp_odd_root.size()<<std::endl;;
+
+            if(col_count>=3){
+                narrow_area_points_vertical.push_back(temp_odd_root);
+                for (const auto& node_ptr : temp_odd_root) {
+                    narrow_area_grid_points[node_ptr->x][node_ptr->y] = false;
+                }
+                temp_odd_root.clear();
+                col_count = 0;
+                current_root.clear();
+
+                if(narrow_area_grid_points[node->x][node->y] == 1){
+                    current_root.push_back(node);
+                }
+            }
+            else{
+                temp_odd_root.clear();
+                col_count = 0;
+                current_root.clear();
+                if(narrow_area_grid_points[node->x][node->y] == 1){
+                    current_root.push_back(node);
+                }
+            }
+        }
+    }
+    else{
+        if(narrow_area_grid_points[node->x][node->y] == 1){
+                    current_root.push_back(node);
+           }
+    }
+    // std::cout << "(" << node->x << ", " << node->y << ") ";
+    current_col = node;
 }

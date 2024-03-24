@@ -9,6 +9,72 @@
 #include <string>
 #include <tf2/LinearMath/Quaternion.h>
 #include <vector>
+#include <unordered_map>
+#include <utility> // for std::pair
+#include <functional> // For std::hash
+
+// using Node = std::pair<int, int>; // Node representation as a pair of coordinates
+// using Graph = std::unordered_map<Node, std::vector<Node>>; // Graph as an adjacency list
+
+// // Define the Node type
+// using Node = std::pair<int, int>;
+
+// // Specialize std::hash for Node
+// namespace std {
+// template <>
+// struct hash<Node> {
+//     size_t operator()(const Node& node) const {
+//         // Compute individual hash values for first and second,
+//         // and then combine them
+//         size_t h1 = std::hash<int>()(node.first);
+//         size_t h2 = std::hash<int>()(node.second);
+
+//         // Combine the hash values (example of a simple way to combine)
+//         return h1 ^ (h2 << 1); 
+//     }
+// };
+// }
+
+// Graph convertGridToGraph(const std::vector<std::vector<int>>& grid) {
+//     Graph graph;
+//     int numRows = grid.size();
+//     int numCols = grid[0].size();
+
+//     for (int i = 0; i < numRows; ++i) {
+//         for (int j = 0; j < numCols; ++j) {
+//             if (grid[i][j] == 0) { // Assuming 0 represents a walkable cell
+//                 Node node = {i, j};
+
+//                 // Check for possible movements (up, down, left, right)
+//                 std::vector<Node> neighbors;
+//                 if (i > 0 && grid[i-1][j] == 0) neighbors.push_back({i-1, j}); // Up
+//                 if (i < numRows-1 && grid[i+1][j] == 0) neighbors.push_back({i+1, j}); // Down
+//                 if (j > 0 && grid[i][j-1] == 0) neighbors.push_back({i, j-1}); // Left
+//                 if (j < numCols-1 && grid[i][j+1] == 0) neighbors.push_back({i, j+1}); // Right
+
+//                 // Add the node and its neighbors to the graph
+//                 graph[node] = neighbors;
+//             }
+//         }
+//     }
+
+//     return graph;
+// }
+
+// void printGraph(const std::unordered_map<Node, std::vector<Node>>& graph) {
+//     for (const auto& pair : graph) {
+//         const Node& node = pair.first;
+//         const std::vector<Node>& neighbors = pair.second;
+        
+//         std::cout << "Node (" << node.first << ", " << node.second << "): ";
+        
+//         for (const auto& neighbor : neighbors) {
+//             std::cout << "(" << neighbor.first << ", " << neighbor.second << ") ";
+//         }
+        
+//         std::cout << std::endl;
+//     }
+// }
 
 using PoseStamped = geometry_msgs::PoseStamped;
 
@@ -235,6 +301,9 @@ int main(int argc, char** argv)
     printGridBinary(explored_free_area_grid);
 
 
+    // printGridBinary(explored_free_area_grid);
+    // convertGridToGraph(grid)
+
      std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
 
     int numOfRobots = 2;
@@ -285,6 +354,11 @@ int main(int argc, char** argv)
 
     std::vector<nav_msgs::Path> sub_agentPaths(all_partitions.size());
 
+    all_sub_regions.reserve(all_partitions.size());
+    all_sub_paths_array.reserve(all_partitions.size());
+    all_narrow_area_points_vertical.reserve(all_partitions.size());
+    all_narrow_area_points_horizontal.reserve(all_partitions.size());
+
     size_t index = 0;
 
     for (std::vector<Point_t> single : all_partitions){
@@ -306,22 +380,98 @@ int main(int argc, char** argv)
                 
             }
         }
-        // std::cout<<"sub start point : "<<"("<<single.front().x<<","<<single.front().y<<")"<<std::endl;
-        // printGridBinary(sub_region);
+        all_sub_regions.push_back(sub_region);
 
+        nRows = sub_region.size();
+        nCols = sub_region[0].size();
+
+        narrow_area_grid_points.clear();
+        narrow_area_points_vertical.clear();
+        narrow_area_points_horizontal.clear();
+        narrow_area_grid_points = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, true));
+
+        int max_row = 0;
+        int max_col = 0;
+
+        current_col = nullptr;
+        current_root.clear();
+        temp_odd_root.clear();
+        col_count = 0;
+
+
+        test_area_visited_h.clear();
+        test_area_visited_v.clear();
+        test_area_graph_h.clear();
+        test_area_graph_v.clear();
+
+        test_area_visited_h = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));
+        test_area_visited_v = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));
+        test_area_graph_h = std::vector<std::vector<Node*>>(nRows, std::vector<Node*>(nCols, nullptr));
+        test_area_graph_v = std::vector<std::vector<Node*>>(nRows, std::vector<Node*>(nCols, nullptr));
+
+        root_h = nullptr;
+        root_v = nullptr;
+
+        for (int i = 0; i < nRows; ++i) {
+            for (int j = 0; j < nCols; ++j) {
+                if (sub_region[i][j] == 0 && !test_area_visited_h[i][j]) {
+
+                    std::cout<<"Found pont h : "<<"("<<i<<", "<<j<<")"<<std::endl;
+                    bfs(i, j,nRows,nCols,sub_region, test_area_visited_h,test_area_graph_h,root_h);
+                }
+            }
+        }
+
+        for (int i = 0; i < nRows; ++i) {
+            for (int j = 0; j < nCols; ++j) {
+                if (sub_region[i][j] == 0 && !test_area_visited_v[i][j]) {
+                    std::cout<<"Found pont v : "<<"("<<i<<", "<<j<<")"<<std::endl;
+                    bfs_vertical(i, j,nRows,nCols,sub_region,test_area_visited_v,test_area_graph_v,root_v);
+                }
+            }
+        }
+
+
+        if (root_h != nullptr) {
+            int max_row_count = max_row - root_h->x;
+            preOrderTraversalHorizontal(root_h,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_horizontal);
+        }
+        
+        else {
+            std::cout << "No column root node found." << std::endl;
+        }
+
+        if (root_v != nullptr) {
+            int max_row_count = max_row - root_v->x;
+
+            current_col = nullptr;
+            current_root.clear();
+            temp_odd_root.clear();
+            col_count = 0;
+            preOrderTraversalVertical(root_v,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_vertical);
+        }
+        
+        else {
+            std::cout << "No column root node found." << std::endl;
+        }
+    
+        all_narrow_area_points_vertical.push_back(narrow_area_points_vertical);
+        all_narrow_area_points_horizontal.push_back(narrow_area_points_horizontal);
+        
         Point_t sub_region_Scaled;
         int multiple_pass_counter, visited_counter;
 
         sub_region_Scaled.x = single.front().x;
         sub_region_Scaled.y = single.front().y;
         std::list<Point_t> sub_region_path;
-        std::vector<std::vector<bool>> narrow_area_grid_points(nRows, std::vector<bool>(nCols, true));
+        
 
-        // sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points);
+        sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points,narrow_area_points_horizontal,narrow_area_points_vertical);
 
-        sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        all_sub_paths_array.push_back(sub_region_path);
 
         planner.sub_paths_array.push_back(sub_region_path);
+        
 
         std::cout<<"Index : "<<index<<std::endl;
 

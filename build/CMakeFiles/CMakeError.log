@@ -66,3 +66,309 @@ make: *** [Makefile:121: cmTC_e3545/fast] Error 2
 
 
 
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_6bf75/fast && /usr/bin/make -f CMakeFiles/cmTC_6bf75.dir/build.make CMakeFiles/cmTC_6bf75.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6bf75.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_6bf75.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_6bf75
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6bf75.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_6bf75.dir/testCCompiler.c.o  -o cmTC_6bf75 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_6bf75.dir/build.make:87: cmTC_6bf75] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_6bf75/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_4d481/fast && /usr/bin/make -f CMakeFiles/cmTC_4d481.dir/build.make CMakeFiles/cmTC_4d481.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4d481.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_4d481.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_4d481
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4d481.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_4d481.dir/testCCompiler.c.o  -o cmTC_4d481 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_4d481.dir/build.make:87: cmTC_4d481] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_4d481/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_bba56/fast && /usr/bin/make -f CMakeFiles/cmTC_bba56.dir/build.make CMakeFiles/cmTC_bba56.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bba56.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_bba56.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_bba56
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bba56.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_bba56.dir/testCCompiler.c.o  -o cmTC_bba56 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_bba56.dir/build.make:87: cmTC_bba56] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_bba56/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_33cd4/fast && /usr/bin/make -f CMakeFiles/cmTC_33cd4.dir/build.make CMakeFiles/cmTC_33cd4.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_33cd4.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_33cd4.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_33cd4
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_33cd4.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_33cd4.dir/testCCompiler.c.o  -o cmTC_33cd4 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_33cd4.dir/build.make:87: cmTC_33cd4] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_33cd4/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_56c27/fast && /usr/bin/make -f CMakeFiles/cmTC_56c27.dir/build.make CMakeFiles/cmTC_56c27.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_56c27.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_56c27.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_56c27
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_56c27.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_56c27.dir/testCCompiler.c.o  -o cmTC_56c27 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_56c27.dir/build.make:87: cmTC_56c27] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_56c27/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_5c27a/fast && /usr/bin/make -f CMakeFiles/cmTC_5c27a.dir/build.make CMakeFiles/cmTC_5c27a.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5c27a.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_5c27a.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_5c27a
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5c27a.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_5c27a.dir/testCCompiler.c.o  -o cmTC_5c27a 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_5c27a.dir/build.make:87: cmTC_5c27a] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_5c27a/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_11423/fast && /usr/bin/make -f CMakeFiles/cmTC_11423.dir/build.make CMakeFiles/cmTC_11423.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_11423.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_11423.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_11423
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_11423.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_11423.dir/testCCompiler.c.o  -o cmTC_11423 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_11423.dir/build.make:87: cmTC_11423] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_11423/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_10e9f/fast && /usr/bin/make -f CMakeFiles/cmTC_10e9f.dir/build.make CMakeFiles/cmTC_10e9f.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_10e9f.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_10e9f.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_10e9f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_10e9f.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_10e9f.dir/testCCompiler.c.o  -o cmTC_10e9f 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_10e9f.dir/build.make:87: cmTC_10e9f] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_10e9f/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_3c2c5/fast && /usr/bin/make -f CMakeFiles/cmTC_3c2c5.dir/build.make CMakeFiles/cmTC_3c2c5.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3c2c5.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_3c2c5.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_3c2c5
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3c2c5.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_3c2c5.dir/testCCompiler.c.o  -o cmTC_3c2c5 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_3c2c5.dir/build.make:87: cmTC_3c2c5] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_3c2c5/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_180f2/fast && /usr/bin/make -f CMakeFiles/cmTC_180f2.dir/build.make CMakeFiles/cmTC_180f2.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_180f2.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_180f2.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_180f2
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_180f2.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_180f2.dir/testCCompiler.c.o  -o cmTC_180f2 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_180f2.dir/build.make:87: cmTC_180f2] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_180f2/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_8d01c/fast && /usr/bin/make -f CMakeFiles/cmTC_8d01c.dir/build.make CMakeFiles/cmTC_8d01c.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_8d01c.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_8d01c.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_8d01c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8d01c.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_8d01c.dir/testCCompiler.c.o  -o cmTC_8d01c 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_8d01c.dir/build.make:87: cmTC_8d01c] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_8d01c/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_29131/fast && /usr/bin/make -f CMakeFiles/cmTC_29131.dir/build.make CMakeFiles/cmTC_29131.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_29131.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_29131.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_29131
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_29131.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_29131.dir/testCCompiler.c.o  -o cmTC_29131 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_29131.dir/build.make:87: cmTC_29131] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_29131/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_27572/fast && /usr/bin/make -f CMakeFiles/cmTC_27572.dir/build.make CMakeFiles/cmTC_27572.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_27572.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_27572.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_27572
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_27572.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_27572.dir/testCCompiler.c.o  -o cmTC_27572 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_27572.dir/build.make:87: cmTC_27572] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_27572/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_f79a0/fast && /usr/bin/make -f CMakeFiles/cmTC_f79a0.dir/build.make CMakeFiles/cmTC_f79a0.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_f79a0.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_f79a0.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_f79a0
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f79a0.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_f79a0.dir/testCCompiler.c.o  -o cmTC_f79a0 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_f79a0.dir/build.make:87: cmTC_f79a0] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_f79a0/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_9c113/fast && /usr/bin/make -f CMakeFiles/cmTC_9c113.dir/build.make CMakeFiles/cmTC_9c113.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9c113.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_9c113.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_9c113
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9c113.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_9c113.dir/testCCompiler.c.o  -o cmTC_9c113 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_9c113.dir/build.make:87: cmTC_9c113] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_9c113/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_b6c96/fast && /usr/bin/make -f CMakeFiles/cmTC_b6c96.dir/build.make CMakeFiles/cmTC_b6c96.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b6c96.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_b6c96.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_b6c96
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b6c96.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_b6c96.dir/testCCompiler.c.o  -o cmTC_b6c96 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_b6c96.dir/build.make:87: cmTC_b6c96] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_b6c96/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_dac33/fast && /usr/bin/make -f CMakeFiles/cmTC_dac33.dir/build.make CMakeFiles/cmTC_dac33.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_dac33.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_dac33.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_dac33
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_dac33.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_dac33.dir/testCCompiler.c.o  -o cmTC_dac33 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_dac33.dir/build.make:87: cmTC_dac33] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_dac33/fast] Error 2
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_7a34f/fast && /usr/bin/make -f CMakeFiles/cmTC_7a34f.dir/build.make CMakeFiles/cmTC_7a34f.dir/build
+make[1]: Entering directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7a34f.dir/testCCompiler.c.o
+/usr/bin/avr-gcc    -o CMakeFiles/cmTC_7a34f.dir/testCCompiler.c.o   -c /home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_7a34f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7a34f.dir/link.txt --verbose=1
+/usr/bin/avr-gcc      -rdynamic CMakeFiles/cmTC_7a34f.dir/testCCompiler.c.o  -o cmTC_7a34f 
+avr-gcc: error: unrecognized command line option ‘-rdynamic’
+make[1]: *** [CMakeFiles/cmTC_7a34f.dir/build.make:87: cmTC_7a34f] Error 1
+make[1]: Leaving directory '/home/vboxuser/catkin_ws/src/Comple-Coverage-Path-Planning/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_7a34f/fast] Error 2
+
+
+
