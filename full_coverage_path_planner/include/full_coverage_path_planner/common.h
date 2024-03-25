@@ -48,6 +48,8 @@ typedef struct
 }
 gridNode_t;
 
+static std::list<std::vector<std::vector<bool>>> test_matrix_list;
+
 
 static std::vector<std::vector<Node*>> narrow_area_points_vertical;
 static std::vector<std::vector<Node*>> narrow_area_points_horizontal;

@@ -4,6 +4,11 @@
     </include>
 
     <node pkg="full_coverage_path_planner" name="sensor_scan_node" type="sensor_scan_node" clear_params="true" output="screen">
+        <param name="robot_namespace" value="robot_"/>
+        <param name="laser_frequency" value="10.0"/>
+        <param name="robot_count" value="4"/>
+        <param name="map_service" value="/map"/>
+        <param name="laser_frame_id" value="base_link"/>
     </node>
 
 
