@@ -9,8 +9,205 @@
 #include <string>
 #include <tf2/LinearMath/Quaternion.h>
 #include <vector>
+#include <unordered_map>
+#include <utility> // for std::pair
+#include <functional> // For std::hash
+
+// using Node = std::pair<int, int>; // Node representation as a pair of coordinates
+// using Graph = std::unordered_map<Node, std::vector<Node>>; // Graph as an adjacency list
+
+// // Define the Node type
+// using Node = std::pair<int, int>;
+
+// // Specialize std::hash for Node
+// namespace std {
+// template <>
+// struct hash<Node> {
+//     size_t operator()(const Node& node) const {
+//         // Compute individual hash values for first and second,
+//         // and then combine them
+//         size_t h1 = std::hash<int>()(node.first);
+//         size_t h2 = std::hash<int>()(node.second);
+
+//         // Combine the hash values (example of a simple way to combine)
+//         return h1 ^ (h2 << 1); 
+//     }
+// };
+// }
+
+// Graph convertGridToGraph(const std::vector<std::vector<int>>& grid) {
+//     Graph graph;
+//     int numRows = grid.size();
+//     int numCols = grid[0].size();
+
+//     for (int i = 0; i < numRows; ++i) {
+//         for (int j = 0; j < numCols; ++j) {
+//             if (grid[i][j] == 0) { // Assuming 0 represents a walkable cell
+//                 Node node = {i, j};
+
+//                 // Check for possible movements (up, down, left, right)
+//                 std::vector<Node> neighbors;
+//                 if (i > 0 && grid[i-1][j] == 0) neighbors.push_back({i-1, j}); // Up
+//                 if (i < numRows-1 && grid[i+1][j] == 0) neighbors.push_back({i+1, j}); // Down
+//                 if (j > 0 && grid[i][j-1] == 0) neighbors.push_back({i, j-1}); // Left
+//                 if (j < numCols-1 && grid[i][j+1] == 0) neighbors.push_back({i, j+1}); // Right
+
+//                 // Add the node and its neighbors to the graph
+//                 graph[node] = neighbors;
+//             }
+//         }
+//     }
+
+//     return graph;
+// }
+
+// void printGraph(const std::unordered_map<Node, std::vector<Node>>& graph) {
+//     for (const auto& pair : graph) {
+//         const Node& node = pair.first;
+//         const std::vector<Node>& neighbors = pair.second;
+        
+//         std::cout << "Node (" << node.first << ", " << node.second << "): ";
+        
+//         for (const auto& neighbor : neighbors) {
+//             std::cout << "(" << neighbor.first << ", " << neighbor.second << ") ";
+//         }
+        
+//         std::cout << std::endl;
+//     }
+// }
 
 using PoseStamped = geometry_msgs::PoseStamped;
+
+int countFreeCells(const std::vector<std::vector<bool>>& grid) {
+    int freeCells = 0;
+    for (const auto& row : grid) {
+        for (bool cell : row) {
+            if (!cell) freeCells++;
+        }
+    }
+    return freeCells;
+}
+
+int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::vector<bool>>& visited, std::vector<std::vector<bool>>& subGrid, int i, int j, int& remaining) {
+    if (i < 0 || i >= grid.size() || j < 0 || j >= grid[0].size() || visited[i][j] || grid[i][j] || remaining <= 0) {
+        return 0;
+    }
+
+    visited[i][j] = true;
+    subGrid[i][j] = false; // Mark this cell as free in the sub-grid
+    remaining--;
+
+    int filled = 1;
+    filled += floodFillUtil(grid, visited, subGrid, i + 1, j, remaining);
+    filled += floodFillUtil(grid, visited, subGrid, i - 1, j, remaining);
+    filled += floodFillUtil(grid, visited, subGrid, i, j + 1, remaining);
+    filled += floodFillUtil(grid, visited, subGrid, i, j - 1, remaining);
+
+    return filled;
+}
+
+std::vector<std::vector<std::vector<bool>>> partitionGrid(const std::vector<std::vector<bool>>& grid, int noOfRobots) {
+    int totalFreeCells = countFreeCells(grid); // Use countFreeCells to get the actual free cells
+    std::cout << "Total Free Cells: " << totalFreeCells << std::endl;
+    int freeCellsForRobot = totalFreeCells / noOfRobots;
+    
+    std::vector<std::vector<std::vector<bool>>> partitions(noOfRobots, std::vector<std::vector<bool>>(grid.size(), std::vector<bool>(grid[0].size(), true)));
+    std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
+    
+    int robot = 0, remaining = freeCellsForRobot;
+    for (int i = 0; i < grid.size() && robot < noOfRobots; ++i) {
+        for (int j = 0; j < grid[0].size() && robot < noOfRobots; ++j) {
+            if (!grid[i][j] && !visited[i][j]) { // If the cell is free and not visited
+                // Reset remaining for each robot
+                remaining = freeCellsForRobot;
+                floodFillUtil(grid, visited, partitions[robot], i, j, remaining);
+                robot++; // Move on to the next robot after allocation
+            }
+        }
+    }
+    return partitions;
+}
+
+// int floodFillUtil(const std::vector<std::vector<bool>>& grid, std::vector<std::vector<bool>>& visited, std::vector<std::vector<bool>>& sub_grid, int i, int j, int& remaining) {
+//     if (i < 0 || i >= grid.size() || j < 0 || j >= grid[0].size() || visited[i][j] || grid[i][j] || remaining <= 0) {
+//         return 0;
+//     }
+//     visited[i][j] = true;
+//     sub_grid[i][j] = false; // Mark this cell as free in the sub-grid
+//     remaining--;
+//     int filled = 1;
+//     filled += floodFillUtil(grid, visited, sub_grid, i + 1, j, remaining);
+//     filled += floodFillUtil(grid, visited, sub_grid, i - 1, j, remaining);
+//     filled += floodFillUtil(grid, visited, sub_grid, i, j + 1, remaining);
+//     filled += floodFillUtil(grid, visited, sub_grid, i, j - 1, remaining);
+//     return filled;
+// }
+
+std::vector<std::vector<std::vector<bool>>> floodFill(const std::vector<std::vector<bool>>& grid, int noofRobots) {
+    int totalFreeCells = 0; // Calculate the total number of free cells
+    for (const auto& row : grid) {
+        for (bool cell : row) {
+            if (!cell) totalFreeCells++;
+        }
+    }
+
+    int subFreeCellCount = totalFreeCells / noofRobots; // Number of free cells each robot should cover
+    std::vector<std::vector<std::vector<bool>>> sub_grids(noofRobots, std::vector<std::vector<bool>>(grid.size(), std::vector<bool>(grid[0].size(), true))); // Initialize all sub-grids as occupied
+
+    int freeCellsAllocated = 0; // Track the number of free cells allocated
+    int startRow = 0, startCol = 0; // Start position for the next sub-grid
+    std::vector<std::vector<bool>> visited = grid; // Initialize visited array with the same size as the grid
+
+    for (int robot = 0; robot < noofRobots; robot++) {
+        int subGridFreeCellCount = subFreeCellCount; // Reset for each robot
+
+        // Attempt to allocate subFreeCellCount cells to the current robot's sub-grid
+        bool found = false;
+        for (int i = startRow; i < grid.size() && subGridFreeCellCount > 0; ++i) {
+            for (int j = (i == startRow ? startCol : 0); j < grid[0].size() && subGridFreeCellCount > 0; ++j) {
+                if (!grid[i][j] && !visited[i][j]) { // If the cell is free and not visited
+                    int filled = floodFillUtil(grid, visited, sub_grids[robot], i, j, subGridFreeCellCount);
+                    freeCellsAllocated += filled;
+                    subGridFreeCellCount -= filled;
+                    if (!found) {
+                        found = true;
+                        // Update the start position for the next sub-grid
+                        startRow = i;
+                        startCol = j + 1;
+                        if (startCol >= grid[0].size()) {
+                            startRow++;
+                            startCol = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check if there are remaining free cells to be allocated to subsequent robots
+        if (freeCellsAllocated < totalFreeCells && robot == noofRobots - 1) {
+            subFreeCellCount = (totalFreeCells - freeCellsAllocated) / (noofRobots - robot); // Adjust remaining cells for the last robot(s)
+        }
+    }
+
+    return sub_grids; // Return all sub-grids
+}
+
+void printSubGrids(const std::vector<std::vector<std::vector<bool>>>& sub_grids) {
+    for (size_t robot = 0; robot < sub_grids.size(); ++robot) {
+        std::cout << "Sub-grid for Robot " << (robot + 1) << ":" << std::endl;
+        int freeCells = 0; // Counter for free cells in the current sub-grid
+        for (const auto& row : sub_grids[robot]) {
+            for (bool cell : row) {
+                if (!cell) freeCells++; // Increment if the cell is free (false)
+                std::cout << (cell ? "1 " : "0 "); // Print 1 for occupied (true), 0 for free (false)
+            }
+            std::cout << std::endl; // New line at the end of each row
+        }
+        // Print the count of free cells for this robot's sub-grid
+        std::cout << "Free Cells for Robot " << (robot + 1) << ": " << freeCells << std::endl << std::endl;
+    }
+}
+
 
 inline bool operator<(const Point_t& lhs, const Point_t& rhs) {
     // Compare based on x and y values
@@ -103,6 +300,18 @@ int main(int argc, char** argv)
 
     printGridBinary(explored_free_area_grid);
 
+
+    // printGridBinary(explored_free_area_grid);
+    // convertGridToGraph(grid)
+
+     std::vector<std::vector<bool>> visited(grid.size(), std::vector<bool>(grid[0].size(), false));
+
+    int numOfRobots = 2;
+
+    // auto sub_grids = floodFill(explored_free_area_grid, numOfRobots);
+    auto partitions = partitionGrid(explored_free_area_grid, numOfRobots);
+    printSubGrids(partitions);
+
     int multiple_pass_counter, visited_counter;
 
     Point_t sub_Scaled;
@@ -110,7 +319,7 @@ int main(int argc, char** argv)
     sub_Scaled.x = boundary.front().y;
     sub_Scaled.y = boundary.front().x;
 
-    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(explored_free_area_grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
+    std::list<Point_t> sub_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(grid, sub_Scaled, multiple_pass_counter, visited_counter); // Call with appropriate arguments
 
 
     int subpart_size = sub_path.size()/robotCount;
@@ -145,6 +354,11 @@ int main(int argc, char** argv)
 
     std::vector<nav_msgs::Path> sub_agentPaths(all_partitions.size());
 
+    all_sub_regions.reserve(all_partitions.size());
+    all_sub_paths_array.reserve(all_partitions.size());
+    all_narrow_area_points_vertical.reserve(all_partitions.size());
+    all_narrow_area_points_horizontal.reserve(all_partitions.size());
+
     size_t index = 0;
 
     for (std::vector<Point_t> single : all_partitions){
@@ -166,25 +380,149 @@ int main(int argc, char** argv)
                 
             }
         }
-        std::cout<<"sub start point : "<<"("<<single.front().x<<","<<single.front().y<<")"<<std::endl;
-        printGridBinary(sub_region);
+        all_sub_regions.push_back(sub_region);
 
+        nRows = sub_region.size();
+        nCols = sub_region[0].size();
+
+        narrow_area_grid_points.clear();
+        narrow_area_points_vertical.clear();
+        narrow_area_points_horizontal.clear();
+        narrow_area_grid_points = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, true));
+
+        int max_row = 0;
+        int max_col = 0;
+
+        current_col = nullptr;
+        current_root.clear();
+        temp_odd_root.clear();
+        col_count = 0;
+
+
+        test_area_visited_h.clear();
+        test_area_visited_v.clear();
+        test_area_graph_h.clear();
+        test_area_graph_v.clear();
+
+        test_area_visited_h = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));
+        test_area_visited_v = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));
+        test_area_graph_h = std::vector<std::vector<Node*>>(nRows, std::vector<Node*>(nCols, nullptr));
+        test_area_graph_v = std::vector<std::vector<Node*>>(nRows, std::vector<Node*>(nCols, nullptr));
+
+        root_h = nullptr;
+        root_v = nullptr;
+
+        for (int i = 0; i < nRows; ++i) {
+            for (int j = 0; j < nCols; ++j) {
+                if (sub_region[i][j] == 0 && !test_area_visited_h[i][j]) {
+
+                    std::cout<<"Found pont h : "<<"("<<i<<", "<<j<<")"<<std::endl;
+                    bfs(i, j,nRows,nCols,sub_region, test_area_visited_h,test_area_graph_h,root_h);
+                }
+            }
+        }
+
+        for (int i = 0; i < nRows; ++i) {
+            for (int j = 0; j < nCols; ++j) {
+                if (sub_region[i][j] == 0 && !test_area_visited_v[i][j]) {
+                    std::cout<<"Found pont v : "<<"("<<i<<", "<<j<<")"<<std::endl;
+                    bfs_vertical(i, j,nRows,nCols,sub_region,test_area_visited_v,test_area_graph_v,root_v);
+                }
+            }
+        }
+
+
+        if (root_h != nullptr) {
+            int max_row_count = max_row - root_h->x;
+            preOrderTraversalHorizontal(root_h,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_horizontal);
+        }
+        
+        else {
+            std::cout << "No column root node found." << std::endl;
+        }
+
+        if (root_v != nullptr) {
+            int max_row_count = max_row - root_v->x;
+
+            current_col = nullptr;
+            current_root.clear();
+            temp_odd_root.clear();
+            col_count = 0;
+            preOrderTraversalVertical(root_v,current_col,current_root,max_row_count,temp_odd_root,col_count,narrow_area_grid_points,narrow_area_points_vertical);
+        }
+        
+        else {
+            std::cout << "No column root node found." << std::endl;
+        }
+    
+        all_narrow_area_points_vertical.push_back(narrow_area_points_vertical);
+        all_narrow_area_points_horizontal.push_back(narrow_area_points_horizontal);
+        
         Point_t sub_region_Scaled;
         int multiple_pass_counter, visited_counter;
 
         sub_region_Scaled.x = single.front().x;
         sub_region_Scaled.y = single.front().y;
         std::list<Point_t> sub_region_path;
+        
 
-        sub_region_path = full_coverage_path_planner::SpiralSTC::spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        sub_region_path = full_coverage_path_planner::SpiralSTC::new_spiral_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter,narrow_area_grid_points,narrow_area_points_horizontal,narrow_area_points_vertical);
 
-        // sub_region_path = full_coverage_path_planner::SpiralSTC::boustrophedon_stc(sub_region, sub_region_Scaled, multiple_pass_counter, visited_counter);
+        all_sub_paths_array.push_back(sub_region_path);
 
         planner.sub_paths_array.push_back(sub_region_path);
+        
+
+        std::cout<<"Index : "<<index<<std::endl;
+
+        std::cout<<"scalled point ("<<sub_region_Scaled.x<<", "<<sub_region_Scaled.y<<")"<<std::endl;
+
+        std::cout<<"sub plan first point ("<<sub_region_path.front().x<<", "<<sub_region_path.front().y<<")"<<std::endl;
+
+        std::cout<<"sub plan end point ("<<sub_region_path.back().x<<", "<<sub_region_path.back().y<<")"<<std::endl;
+
 
         std::vector<PoseStamped> sub_plan;
         sub_plan.reserve(sub_region_path.size());
+
+        double x = sub_region_Scaled.x; // Example value
+        double y = sub_region_Scaled.y; // Example value
+        double z = 0.0; // Example value
+        double roll = 0.0; // Example value
+        double pitch = 0.0; // Example value
+        double yaw = 0.0; // Example value
+
+        // Construct the start_pose string using the variables
+        std::ostringstream oss;
+        oss << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw;
+        std::string start_pose = oss.str(); 
+
+        {
+            std::stringstream ss(start_pose);
+            ss >> pose.pose.position.x >> pose.pose.position.y >> pose.pose.position.z;
+            double roll, pitch, yaw;
+            ss >> roll >> pitch >> yaw;
+            tf2::Quaternion q;
+            q.setRPY(roll, pitch, yaw);
+            pose.header.frame_id = "map";
+            pose.pose.orientation.x = q.x();
+            pose.pose.orientation.y = q.y();
+            pose.pose.orientation.z = q.z();
+            pose.pose.orientation.w = q.w();
+        }
+
         planner.parsePointlist2Plan(pose, sub_region_path, sub_plan);
+
+        std::cout<<"sub post stamped start point ("<<sub_plan.front().pose.position.x<<", "<<sub_plan.front().pose.position.y<<")"<<std::endl;
+
+        std::cout<<"sub post stamped end point ("<<sub_plan.back().pose.position.x<<", "<<sub_plan.back().pose.position.y<<")"<<std::endl;
+
+        for (const auto& pose : sub_plan)
+        {
+            std::cout<<"("<<pose.pose.position.x<<", "<<pose.pose.position.y<<") ";
+        }
+
+        std::cout<<"-----------------------------------------------------------------------------------------------------"<<std::endl;
 
         std::stringstream ss;
         ss << robotNamespace << "_" << index << "/waypoints";
@@ -194,12 +532,12 @@ int main(int argc, char** argv)
         sub_agentPaths[index].header.stamp = ros::Time::now();
         sub_agentPaths[index].poses.reserve(sub_plan.end() - sub_plan.begin());
 
-        for (const auto& pose : sub_plan)
-        {
-            sub_agentPaths[index].poses.push_back(pose);
-        }
+        // for (const auto& pose : sub_plan)
+        // {
+        //     sub_agentPaths[index].poses.push_back(pose);
+        // }
 
-        sub_waypointPublishers[index].publish(sub_agentPaths[index]);
+        // sub_waypointPublishers[index].publish(sub_agentPaths[index]);
 
         // merged_path.insert(merged_path.end(), sub_region_path.begin(),sub_region_path.end());
         if (!merged_path.empty()) {
@@ -219,8 +557,11 @@ int main(int argc, char** argv)
 
         sub_waypointPublishers[index].publish(sub_agentPaths[index]);
 
+        sub_plan.clear();
+        sub_region_path.clear();
+
         ++index;
-        // break;
+        
 
     }
 
