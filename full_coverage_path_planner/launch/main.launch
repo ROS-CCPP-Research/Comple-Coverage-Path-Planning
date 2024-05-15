@@ -14,13 +14,17 @@
     <!--    Compute coverage path from map, divide path for each agent -->
     <include file="$(find full_coverage_path_planner)/launch/path_planner.launch"/>
 
-
-    <!-- Waits for number of agents and waypoints for each agent, then launches the entire stack for each agent -->
-
-    <node pkg="full_coverage_path_planner" type="multi_robot_bringup.py" name="multi_robot_bringup" clear_params="true"
+ <node pkg="full_coverage_path_planner" type="multi_robot_bringup.py" name="multi_robot_bringup" clear_params="true"
           required="true" output="screen">
         <param name="robot_namespace" value="robot"/>
     </node>
+
+    <!-- Waits for number of agents and waypoints for each agent, then launches the entire stack for each agent -->
+<!-- 
+    <node pkg="full_coverage_path_planner" type="task_allocator" name="task_allocator" clear_params="true"
+          required="true" output="screen">
+        <param name="robot_namespace" value="robot"/>
+    </node> -->
 
     <node pkg="full_coverage_path_planner" type="map_merge.py" respawn="false" name="map_merge" clear_params="true"
           output="screen">

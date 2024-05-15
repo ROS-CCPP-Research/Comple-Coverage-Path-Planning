@@ -136,6 +136,10 @@ include_directories(
 add_dependencies(mobile_robot_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(laser_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(robot_bidder src/robot_bidder.cpp)
+target_link_libraries(robot_bidder ${catkin_LIBRARIES})
+add_dependencies(robot_bidder ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 ## Declare a C++ executable
 add_executable(mobile_robot_simulator_node src/mobile_robot_simulator_node.cpp)
 add_executable(laser_scanner_simulator_node src/laser_simulator_node.cpp)

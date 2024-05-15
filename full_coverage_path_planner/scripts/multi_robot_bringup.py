@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import rospy
+import roslaunch
 import roslaunch.rlutil
 import roslaunch.parent
-import roslaunch
-import rospy
 from std_msgs.msg import UInt8
 from typing import cast
 from geometry_msgs.msg import Pose
