@@ -7,6 +7,7 @@
 
 namespace full_coverage_path_planner {
 
+
 TaskAllocator::TaskAllocator(ros::NodeHandle& nh, const std::vector<std::string>& robotNamespaces) : nh_(nh) {
     assignments_pub_ = nh_.advertise<std_msgs::String>("assignments", 10);
     ROS_INFO("Task Allocator Node Initialized");

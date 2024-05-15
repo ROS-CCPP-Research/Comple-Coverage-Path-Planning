@@ -44,6 +44,7 @@ private:
     std::vector<geometry_msgs::Point> robotStartLocations;
 
 
+
     void dynamicCallback(const nav_msgs::Path::ConstPtr& msg, const std::string& topic, int robotId);
     void simulateBids(int taskId);
     void allocateTasks();
