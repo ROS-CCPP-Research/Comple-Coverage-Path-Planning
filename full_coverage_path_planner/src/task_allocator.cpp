@@ -7,7 +7,6 @@
 
 namespace full_coverage_path_planner {
 
-
 TaskAllocator::TaskAllocator(ros::NodeHandle& nh, const std::vector<std::string>& robotNamespaces) : nh_(nh) {
     assignments_pub_ = nh_.advertise<std_msgs::String>("assignments", 10);
     ROS_INFO("Task Allocator Node Initialized");
@@ -27,13 +26,13 @@ TaskAllocator::~TaskAllocator() {
 }
 
 void TaskAllocator::dynamicCallback(const nav_msgs::Path::ConstPtr& msg, const std::string& topic, int robotId) {
-    static int taskId = 0;
-    ROS_INFO("[DynamicCallback] Received task on topic: %s from Robots", topic.c_str(), robotId);
-    Task task;
-    task.id = taskId++;
-    task.path = *msg;
-    tasks_.push_back(task);
-    simulateBids(task.id);
+    static int waypointId = 0;
+    ROS_INFO("[DynamicCallback] Received waypoint on topic: %s from Robots", topic.c_str(), robotId);
+    Task waypoint;
+    waypoint.id = waypointId++;
+    waypoint.path = *msg;
+    tasks_.push_back(waypoint);
+    simulateBids(waypoint.id);
 }
 
 void TaskAllocator::initializeRobotStartPositions(const std::vector<std::string>& robotNamespaces) {
@@ -48,23 +47,23 @@ void TaskAllocator::initializeRobotStartPositions(const std::vector<std::string>
     }
 }
 
-void TaskAllocator::calculateBidsBasedOnDistance(int taskId) {
-    if (taskId < 0 || taskId >= tasks_.size()) {
-        ROS_WARN("Invalid task ID for bid calculation.");
+void TaskAllocator::calculateBidsBasedOnDistance(int waypointId) {
+    if (waypointId < 0 || waypointId >= tasks_.size()) {
+        ROS_WARN("Invalid waypoint ID for bid calculation.");
         return;
     }
-    auto& taskStartPos = tasks_[taskId].path.poses.front().pose.position;
+    auto& waypointStartPos = tasks_[waypointId].path.poses.front().pose.position;
     for (size_t i = 0; i < robotStartLocations.size(); ++i) {
-        auto dx = robotStartLocations[i].x - taskStartPos.x;
-        auto dy = robotStartLocations[i].y - taskStartPos.y;
+        auto dx = robotStartLocations[i].x - waypointStartPos.x;
+        auto dy = robotStartLocations[i].y - waypointStartPos.y;
         double distance = std::sqrt(dx * dx + dy * dy);
         double bidValue = 1 / (distance + 0.01); // Avoid division by zero
-        task_bids_[taskId].emplace_back(taskId, i, bidValue);
+        task_bids_[waypointId].emplace_back(waypointId, i, bidValue);
     }
 }
 
-void TaskAllocator::simulateBids(int taskId) {
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count() + taskId;
+void TaskAllocator::simulateBids(int waypointId) {
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count() + waypointId;
     std::default_random_engine generator(seed);
     std::uniform_real_distribution<double> distribution(1.0, 10.0);
 
@@ -72,42 +71,42 @@ void TaskAllocator::simulateBids(int taskId) {
 
     for (int robotId = 0; robotId < dynamicSubscribers_.size(); ++robotId) {
         double bidValue = distribution(generator);
-        RobotBid bid(taskId, robotId, bidValue);
-        task_bids_[taskId].push_back(bid);
-        ROS_INFO("[simulateBids] Robot %d bids %f for Task %d", robotId, bidValue, taskId);
+        RobotBid bid(waypointId, robotId, bidValue);
+        task_bids_[waypointId].push_back(bid);
+        ROS_INFO("[simulateBids] Robot %d bids %f for Waypoint %d", robotId, bidValue, waypointId);
     }
 
-    // Check if all tasks have bids from all robots
-    for (const auto& task : tasks_) {
-        if (task_bids_[task.id].size() < dynamicSubscribers_.size()) {
+    // Check if all waypoints have bids from all robots
+    for (const auto& waypoint : tasks_) {
+        if (task_bids_[waypoint.id].size() < dynamicSubscribers_.size()) {
             allBidsReceived = false;
             break;
         }
     }
 
     if (allBidsReceived) {
-        ROS_INFO("[simulateBids] All bids received, allocating tasks.");
+        ROS_INFO("[simulateBids] All bids received, allocating waypoints.");
         allocateTasks();
     }
 }
 
 void TaskAllocator::allocateTasks() {
-    ROS_INFO("[allocateTasks] Allocating tasks...");
+    ROS_INFO("[allocateTasks] Allocating waypoints...");
     std::set<int> remainingTasks;
-    for (const auto& task : tasks_) {
-        remainingTasks.insert(task.id);
+    for (const auto& waypoint : tasks_) {
+        remainingTasks.insert(waypoint.id);
     }
 
     std::vector<int> remainingRobots(dynamicSubscribers_.size());
     std::iota(remainingRobots.begin(), remainingRobots.end(), 0); 
 
-    std::map<int, int> taskAssignments; // Maps task IDs to robot IDs
+    std::map<int, int> taskAssignments; // Maps waypoint IDs to robot IDs
 
     while (!remainingTasks.empty() && !remainingRobots.empty()) {
-        for (auto taskId : remainingTasks) {
+        for (auto waypointId : remainingTasks) {
             double highestBidValue = -1;
             int highestBidRobotId = -1;
-            for (const auto& bid : task_bids_[taskId]) {
+            for (const auto& bid : task_bids_[waypointId]) {
                 if (std::find(remainingRobots.begin(), remainingRobots.end(), bid.robot_id) != remainingRobots.end() && 
                     (highestBidRobotId == -1 || bid.bid_value > highestBidValue)) {
                     highestBidValue = bid.bid_value;
@@ -116,11 +115,11 @@ void TaskAllocator::allocateTasks() {
             }
 
             if (highestBidRobotId != -1) {
-                // Assign this task to the robot with the highest bid
-                taskAssignments[taskId] = highestBidRobotId;
+                // Assign this waypoint to the robot with the highest bid
+                taskAssignments[waypointId] = highestBidRobotId;
                 std_msgs::String msg;
                 std::stringstream ss;
-                ss << "Assign Task " << taskId << " to Robot " << highestBidRobotId;
+                ss << "Assign Waypoint " << waypointId << " to Robot " << highestBidRobotId;
                 msg.data = ss.str();
                 assignments_pub_.publish(msg);
                 ROS_INFO("[allocateTasks] %s", ss.str().c_str());
@@ -130,29 +129,27 @@ void TaskAllocator::allocateTasks() {
             }
         }
 
-        // Reevaluate remaining tasks for next iteration
+        // Reevaluate remaining waypoints for next iteration
         std::set<int> newRemainingTasks;
-        for (const auto& task : tasks_) {
-            if (taskAssignments.find(task.id) == taskAssignments.end()) { // If this task hasn't been assigned
-                newRemainingTasks.insert(task.id);
+        for (const auto& waypoint : tasks_) {
+            if (taskAssignments.find(waypoint.id) == taskAssignments.end()) { // If this waypoint hasn't been assigned
+                newRemainingTasks.insert(waypoint.id);
             }
         }
         remainingTasks.swap(newRemainingTasks);
 
-        // If no tasks were assigned in this iteration, break to avoid loop
+        // If no waypoints were assigned in this iteration, break to avoid loop
         if (remainingTasks.empty()) {
             break;
         }
     }
 
-    // Print out the task assignments after all have been allocated
-    ROS_INFO("[allocateTasks] Task allocations completed. Summary:");
+    // Print out the waypoint assignments after all have been allocated
+    ROS_INFO("[allocateTasks] Waypoint allocations completed. Summary:");
     for (const auto& assignment : taskAssignments) {
-        ROS_INFO("Task %d assigned to Robot %d", assignment.first, assignment.second);
+        ROS_INFO("Waypoint %d assigned to Robot %d", assignment.first, assignment.second);
     }
 }
-
-
 
 // Determine the winner based on the bids
 int TaskAllocator::determineWinner(const std::vector<RobotBid>& bids, const std::set<int>& excludedRobots) {
@@ -161,7 +158,7 @@ int TaskAllocator::determineWinner(const std::vector<RobotBid>& bids, const std:
     }
     for (const auto& bid : bids) {
         if (excludedRobots.find(bid.robot_id) == excludedRobots.end()) {
-            ROS_INFO("[determineWinner] Winner for task is Robot %d with bid %f", bid.robot_id, bid.bid_value);
+            ROS_INFO("[determineWinner] Winner for waypoint is Robot %d with bid %f", bid.robot_id, bid.bid_value);
             return bid.robot_id;
         }
     }
