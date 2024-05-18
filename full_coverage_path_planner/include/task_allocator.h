@@ -43,18 +43,14 @@ private:
     std::map<int, std::vector<RobotBid>> task_bids_;
     std::vector<geometry_msgs::Point> robotStartLocations;
 
-
-
     void dynamicCallback(const nav_msgs::Path::ConstPtr& msg, const std::string& topic, int robotId);
-    void simulateBids(int taskId);
+    void calculateBidsBasedOnDistance(int taskId);
     void allocateTasks();
     int determineWinner(const std::vector<RobotBid>& bids, const std::set<int>& excludedRobots);
     
-    // New methods for handling robot start positions and bid calculations
     void initializeRobotStartPositions(const std::vector<std::string>& robotNamespaces);
-    void calculateBidsBasedOnDistance(int taskId);
-
 };
+
 } // namespace full_coverage_path_planner
 
 #endif // TASK_ALLOCATOR_H
