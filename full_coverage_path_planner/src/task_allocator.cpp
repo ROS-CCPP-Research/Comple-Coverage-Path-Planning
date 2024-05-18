@@ -4,12 +4,16 @@
 #include <ros/ros.h>
 #include <random>
 #include <map> 
+#include <cmath>
 
 namespace full_coverage_path_planner {
 
 TaskAllocator::TaskAllocator(ros::NodeHandle& nh, const std::vector<std::string>& robotNamespaces) : nh_(nh) {
     assignments_pub_ = nh_.advertise<std_msgs::String>("assignments", 10);
     ROS_INFO("Task Allocator Node Initialized");
+
+    // Initialize robot start positions
+    initializeRobotStartPositions(robotNamespaces);
 
     for (int index = 0; index < robotNamespaces.size(); ++index) {
         std::string topicName = robotNamespaces[index] + "/waypoints";
@@ -27,12 +31,12 @@ TaskAllocator::~TaskAllocator() {
 
 void TaskAllocator::dynamicCallback(const nav_msgs::Path::ConstPtr& msg, const std::string& topic, int robotId) {
     static int waypointId = 0;
-    ROS_INFO("[DynamicCallback] Received waypoint on topic: %s from Robots", topic.c_str(), robotId);
+    ROS_INFO("[DynamicCallback] Received waypoint on topic: %s from Robot %d", topic.c_str(), robotId);
     Task waypoint;
     waypoint.id = waypointId++;
     waypoint.path = *msg;
     tasks_.push_back(waypoint);
-    simulateBids(waypoint.id);
+    calculateBidsBasedOnDistance(waypoint.id);
 }
 
 void TaskAllocator::initializeRobotStartPositions(const std::vector<std::string>& robotNamespaces) {
@@ -40,10 +44,13 @@ void TaskAllocator::initializeRobotStartPositions(const std::vector<std::string>
     for (int index = 0; index < robotNamespaces.size(); ++index) {
         std::string paramName = robotNamespaces[index] + "/start_position";
         double x, y;
-        nh_.getParam(paramName + "/x", x);
-        nh_.getParam(paramName + "/y", y);
-        robotStartLocations[index].x = x;
-        robotStartLocations[index].y = y;
+        if (nh_.getParam(paramName + "/x", x) && nh_.getParam(paramName + "/y", y)) {
+            robotStartLocations[index].x = x;
+            robotStartLocations[index].y = y;
+            ROS_INFO("Robot %d start position: (%f, %f)", index, x, y);
+        } else {
+            ROS_WARN("Failed to get start position for robot %d", index);
+        }
     }
 }
 
@@ -53,28 +60,18 @@ void TaskAllocator::calculateBidsBasedOnDistance(int waypointId) {
         return;
     }
     auto& waypointStartPos = tasks_[waypointId].path.poses.front().pose.position;
+    ROS_INFO("Waypoint %d start position: (%f, %f)", waypointId, waypointStartPos.x, waypointStartPos.y);
+    
     for (size_t i = 0; i < robotStartLocations.size(); ++i) {
         auto dx = robotStartLocations[i].x - waypointStartPos.x;
         auto dy = robotStartLocations[i].y - waypointStartPos.y;
         double distance = std::sqrt(dx * dx + dy * dy);
         double bidValue = 1 / (distance + 0.01); // Avoid division by zero
         task_bids_[waypointId].emplace_back(waypointId, i, bidValue);
+        ROS_INFO("[calculateBidsBasedOnDistance] Robot %zu bids %f for Waypoint %d (distance: %f)", i, bidValue, waypointId, distance);
     }
-}
-
-void TaskAllocator::simulateBids(int waypointId) {
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count() + waypointId;
-    std::default_random_engine generator(seed);
-    std::uniform_real_distribution<double> distribution(1.0, 10.0);
 
     bool allBidsReceived = true;
-
-    for (int robotId = 0; robotId < dynamicSubscribers_.size(); ++robotId) {
-        double bidValue = distribution(generator);
-        RobotBid bid(waypointId, robotId, bidValue);
-        task_bids_[waypointId].push_back(bid);
-        ROS_INFO("[simulateBids] Robot %d bids %f for Waypoint %d", robotId, bidValue, waypointId);
-    }
 
     // Check if all waypoints have bids from all robots
     for (const auto& waypoint : tasks_) {
@@ -85,7 +82,7 @@ void TaskAllocator::simulateBids(int waypointId) {
     }
 
     if (allBidsReceived) {
-        ROS_INFO("[simulateBids] All bids received, allocating waypoints.");
+        ROS_INFO("[calculateBidsBasedOnDistance] All bids received, allocating waypoints.");
         allocateTasks();
     }
 }
@@ -170,8 +167,6 @@ int TaskAllocator::determineWinner(const std::vector<RobotBid>& bids, const std:
 int main(int argc, char** argv) {
     ros::init(argc, argv, "task_allocator");
     ros::NodeHandle nh;
-    std::string robot_name;
-    // ros::param::get("~robot_namespace", robot_name)
 
     ros::master::V_TopicInfo master_topics;
     ros::master::getTopics(master_topics);

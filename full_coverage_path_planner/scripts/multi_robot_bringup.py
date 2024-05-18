@@ -9,7 +9,6 @@ from typing import cast
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import Path
 
-
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 roslaunch.configure_logging(uuid)
 
@@ -29,6 +28,10 @@ for robot_id in range(n_agents):
     start = (
         cast(Path, rospy.wait_for_message(path_topic, Path)).poses[2].pose
     )  # type: Pose
+
+    # Set start positions as ROS parameters
+    rospy.set_param(f"{robot_namespace}_{robot_id}/start_position/x", start.position.x)
+    rospy.set_param(f"{robot_namespace}_{robot_id}/start_position/y", start.position.y)
 
     cli_args = [
         pkg,
