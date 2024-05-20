@@ -292,7 +292,7 @@ int main(int argc, char** argv)
 
     explore_free_area(grid, scaled.x, scaled.y, free_visited, boundary);  
 
-    std::vector<std::vector<bool>> explored_free_area_grid (nRows, std::vector<bool>(nCols, false));  
+    explored_free_area_grid = std::vector<std::vector<bool>>(nRows, std::vector<bool>(nCols, false));  
 
     create_explored_grid(grid,boundary,explored_free_area_grid);
 
